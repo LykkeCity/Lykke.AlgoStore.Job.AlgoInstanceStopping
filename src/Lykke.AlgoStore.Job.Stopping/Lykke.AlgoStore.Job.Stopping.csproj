@@ -39,5 +39,6 @@
     <ProjectReference Include="..\Lykke.AlgoStore.Job.Stopping.AzureRepositories\Lykke.AlgoStore.Job.Stopping.AzureRepositories.csproj" />
     <ProjectReference Include="..\Lykke.AlgoStore.Job.Stopping.Core\Lykke.AlgoStore.Job.Stopping.Core.csproj" />
     <ProjectReference Include="..\Lykke.AlgoStore.Job.Stopping.Services\Lykke.AlgoStore.Job.Stopping.Services.csproj" />
+    <ProjectReference Include="..\Lykke.AlgoStore.KubernetesClient\Lykke.AlgoStore.KubernetesClient.csproj" />
   </ItemGroup>
 </Project>

@@ -4,6 +4,9 @@ using Autofac.Extensions.DependencyInjection;
 using Common.Log;
 using Lykke.AlgoStore.Job.Stopping.Settings.JobSettings;
 using Lykke.SettingsReader;
+using Microsoft.Rest;
+using System;
+using Lykke.AlgoStore.KubernetesClient;
 
 namespace Lykke.AlgoStore.Job.Stopping.Modules
 {
@@ -30,6 +33,17 @@ namespace Lykke.AlgoStore.Job.Stopping.Modules
                    .SingleInstance();
 
             builder.Populate(_services);
+        }
+
+        private void RegisterExternalServices(ContainerBuilder builder)
+        {
+            builder.RegisterType<KubernetesApiClient>()
+                   .As<IKubernetesApiClient>()
+                   .WithParameter("baseUri", new Uri(_settings.Kubernetes.Url))
+                   .WithParameter("credentials", new TokenCredentials(_settings.Kubernetes.BasicAuthenticationValue))
+                   .WithParameter("certificateHash", _settings.Kubernetes.CertificateHash)
+                   .SingleInstance();
+
         }
     }
 }
