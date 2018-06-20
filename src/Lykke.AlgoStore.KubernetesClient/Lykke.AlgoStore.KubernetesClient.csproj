@@ -5,12 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="AutorestClient\Models\" />
+    <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Models" Version="1.0.57" />
+    <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.10" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Models" Version="1.0.57" />
-    <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.10" />
+    <Folder Include="AutorestClient\" />
+    <Folder Include="AutorestClient\Models\" />
   </ItemGroup>
 
 </Project>
