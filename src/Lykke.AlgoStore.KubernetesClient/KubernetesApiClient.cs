@@ -43,7 +43,7 @@ namespace Lykke.AlgoStore.KubernetesClient
         /// </summary>
         /// <param name="instanceId">The instance identifier.</param>
         /// <returns></returns>
-        public async Task<IList<Iok8skubernetespkgapiv1Pod>> ListPodsByAlgoIdAsync(string instanceId)
+        public async Task<IList<Iok8skubernetespkgapiv1Pod>> ListPodsByInstanceIdAsync(string instanceId)
         {
             using (var kubeResponse =
                 await ListCoreV1PodForAllNamespacesWithHttpMessagesAsync(null, true, "app=" + instanceId))
