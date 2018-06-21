@@ -3,6 +3,8 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <Version>1.0.1</Version>
+    <AssemblyName>Lykke.AlgoStore.Job.Stopping</AssemblyName>
+    <RootNamespace>Lykke.AlgoStore.Job.Stopping</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <LangVersion>latest</LangVersion>
