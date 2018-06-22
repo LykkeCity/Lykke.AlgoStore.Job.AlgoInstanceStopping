@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Lykke.AlgoStore.Security.InstanceAuth;
 
 namespace Lykke.AlgoStore.Job.Stopping
 {
@@ -53,6 +54,7 @@ namespace Lykke.AlgoStore.Job.Stopping
                 services.AddSwaggerGen(options =>
                 {
                     options.DefaultLykkeConfiguration("v1", "Stopping Job API");
+                    //options.OperationFilter<ApiKeyHeaderOperationFilter>();
                 });
 
                 var builder = new ContainerBuilder();
@@ -60,9 +62,11 @@ namespace Lykke.AlgoStore.Job.Stopping
                 if (appSettings.CurrentValue.MonitoringServiceClient != null)
                     _monitoringServiceUrl = appSettings.CurrentValue.MonitoringServiceClient.MonitoringServiceUrl;
 
+                services.AddInstanceAuthentication(appSettings.CurrentValue.AlgoStoreStoppingJob.StoppingServiceCache);
+
                 Log = CreateLogWithSlack(services, appSettings);
 
-                builder.RegisterModule(new JobModule(appSettings.CurrentValue.AlgoStoreStoppingJob, appSettings.Nested(x => x.AlgoStoreStoppingJob), Log));
+                builder.RegisterModule(new JobModule(appSettings.CurrentValue, appSettings.Nested(x => x.AlgoStoreStoppingJob), Log));
 
                 builder.Populate(services);
 

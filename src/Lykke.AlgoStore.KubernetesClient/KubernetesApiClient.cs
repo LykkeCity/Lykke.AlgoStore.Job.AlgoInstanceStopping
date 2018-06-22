@@ -1,8 +1,9 @@
-﻿using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
+﻿using Common.Log;
 using Lykke.AlgoStore.KubernetesClient.Models;
 using Microsoft.Rest;
 using Microsoft.Rest.Serialization;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -13,7 +14,7 @@ namespace Lykke.AlgoStore.KubernetesClient
 {
     public class KubernetesApiClient : Kubernetes, IKubernetesApiClient
     {
-        private readonly IUserLogRepository _userLogRepository;
+        private readonly ILog _log;
 
         /// <summary>
         /// Initializes new instance of <see cref="KubernetesApiClient"/>
@@ -26,7 +27,7 @@ namespace Lykke.AlgoStore.KubernetesClient
             System.Uri baseUri,
             ServiceClientCredentials credentials,
             string certificateHash,
-            IUserLogRepository userLogRepository)
+            ILog log)
             : base(baseUri, credentials, new HttpClientHandler()
             {
                 ServerCertificateCustomValidationCallback = (message, cert, chain, errors) =>
@@ -35,7 +36,7 @@ namespace Lykke.AlgoStore.KubernetesClient
                 }
             })
         {
-            _userLogRepository = userLogRepository;
+            _log = log;
         }
 
         /// <summary>
@@ -63,8 +64,16 @@ namespace Lykke.AlgoStore.KubernetesClient
         /// <returns></returns>
         public async Task<bool> DeleteAsync(string instanceId, string namespaceParameter)
         {
-            await DeleteServiceAsync(instanceId, namespaceParameter);
-            return await DeleteDeploymentAsync(instanceId, namespaceParameter);
+            try
+            {
+                await DeleteServiceAsync(instanceId, namespaceParameter);
+                return await DeleteDeploymentAsync(instanceId, namespaceParameter);
+            }
+            catch (Exception ex)
+            {
+                await _log.WriteErrorAsync(nameof(KubernetesApiClient), nameof(DeleteAsync), ex);
+                return false;
+            }
         }
 
         /// <summary>
@@ -104,7 +113,6 @@ namespace Lykke.AlgoStore.KubernetesClient
             {
                 if (!kubeResponse.Response.IsSuccessStatusCode || kubeResponse.Body == null)
                 {
-                    await _userLogRepository.WriteAsync(instanceId, $"Could not delete service {instanceId}. Details: {kubeResponse.Body}");
                     return false;
                 }
 
