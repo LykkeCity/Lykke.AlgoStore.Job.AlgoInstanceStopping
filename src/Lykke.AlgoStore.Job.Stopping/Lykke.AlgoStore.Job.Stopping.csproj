@@ -3,6 +3,8 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <Version>1.0.1</Version>
+    <AssemblyName>Lykke.AlgoStore.Job.Stopping</AssemblyName>
+    <RootNamespace>Lykke.AlgoStore.Job.Stopping</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <LangVersion>latest</LangVersion>
@@ -16,7 +18,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Lykke.Common" Version="6.8.5" />
+    <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Models" Version="1.0.63" />
+    <PackageReference Include="Lykke.AlgoStore.Security.InstanceAuth" Version="1.0.2" />
+    <PackageReference Include="Lykke.Common" Version="6.8.6" />
     <PackageReference Include="Lykke.Common.ApiLibrary" Version="1.7.2" />
     <PackageReference Include="Lykke.Logs" Version="4.3.4" />
     <PackageReference Include="Lykke.MonitoringServiceApiCaller" Version="1.4.0" />
@@ -26,19 +30,32 @@
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="2.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.HttpOverrides" Version="2.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="2.1.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.1.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.1.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.1.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Lykke.AlgoStore.Job.Stopping.AzureRepositories\Lykke.AlgoStore.Job.Stopping.AzureRepositories.csproj" />
     <ProjectReference Include="..\Lykke.AlgoStore.Job.Stopping.Core\Lykke.AlgoStore.Job.Stopping.Core.csproj" />
     <ProjectReference Include="..\Lykke.AlgoStore.Job.Stopping.Services\Lykke.AlgoStore.Job.Stopping.Services.csproj" />
     <ProjectReference Include="..\Lykke.AlgoStore.KubernetesClient\Lykke.AlgoStore.KubernetesClient.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Infrastructure\Phrases.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Phrases.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Infrastructure\Phrases.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Phrases.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

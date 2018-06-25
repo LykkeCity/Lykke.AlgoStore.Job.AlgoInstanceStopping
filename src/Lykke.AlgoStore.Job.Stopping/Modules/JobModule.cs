@@ -1,26 +1,27 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Autofac;
+﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using AzureStorage.Blob;
 using Common.Log;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
+using Lykke.AlgoStore.Job.Stopping.Settings;
 using Lykke.AlgoStore.Job.Stopping.Settings.JobSettings;
+using Lykke.AlgoStore.KubernetesClient;
 using Lykke.SettingsReader;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Rest;
 using System;
-using Lykke.AlgoStore.KubernetesClient;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
-using AzureStorage.Tables;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Entities;
 
 namespace Lykke.AlgoStore.Job.Stopping.Modules
 {
     public class JobModule : Module
     {
-        private readonly AlgoStoreStoppingSettings _settings;
+        private readonly AppSettings _settings;
         private readonly IReloadingManager<AlgoStoreStoppingSettings> _settingsManager;
         private readonly ILog _log;
         private readonly IServiceCollection _services;
 
-        public JobModule(AlgoStoreStoppingSettings settings, IReloadingManager<AlgoStoreStoppingSettings> settingsManager, ILog log)
+        public JobModule(AppSettings settings, IReloadingManager<AlgoStoreStoppingSettings> settingsManager, ILog log)
         {
             _settings = settings;
             _log = log;
@@ -35,10 +36,9 @@ namespace Lykke.AlgoStore.Job.Stopping.Modules
                    .As<ILog>()
                    .SingleInstance();
 
-
-
             RegisterExternalServices(builder);
             RegisterRepositories(builder);
+
             builder.Populate(_services);
         }
 
@@ -46,20 +46,21 @@ namespace Lykke.AlgoStore.Job.Stopping.Modules
         {
             builder.RegisterType<KubernetesApiClient>()
                    .As<IKubernetesApiClient>()
-                   .WithParameter("baseUri", new Uri(_settings.Kubernetes.Url))
-                   .WithParameter("credentials", new TokenCredentials(_settings.Kubernetes.BasicAuthenticationValue))
-                   .WithParameter("certificateHash", _settings.Kubernetes.CertificateHash)
+                   .WithParameter("baseUri", new Uri(_settings.AlgoStoreStoppingJob.Kubernetes.Url))
+                   .WithParameter("credentials", new TokenCredentials(_settings.AlgoStoreStoppingJob.Kubernetes.BasicAuthenticationValue))
+                   .WithParameter("certificateHash", _settings.AlgoStoreStoppingJob.Kubernetes.CertificateHash)
                    .SingleInstance();
-
         }
 
         private void RegisterRepositories(ContainerBuilder builder)
         {
             var reloadingDbManager = _settingsManager.ConnectionString(x => x.Db.DataStorageConnectionString);
 
-            builder.RegisterInstance(AzureTableStorage<UserLogEntity>.Create(reloadingDbManager, UserLogRepository.TableName, _log));
+            builder.RegisterInstance(AzureBlobStorage.Create(reloadingDbManager));
 
-            builder.RegisterType<UserLogRepository>().As<IUserLogRepository>();
+            builder.RegisterInstance<IAlgoClientInstanceRepository>(
+                   AzureRepoFactories.CreateAlgoClientInstanceRepository(reloadingDbManager, _log))
+               .SingleInstance();
         }
     }
 }

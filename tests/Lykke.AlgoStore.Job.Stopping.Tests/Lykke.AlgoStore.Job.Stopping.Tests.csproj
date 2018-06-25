@@ -10,6 +10,7 @@
     <PackageReference Include="NUnit3TestAdapter" Version="3.10.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Lykke.AlgoStore.Job.Stopping\Lykke.AlgoStore.Job.Stopping.csproj" />
     <ProjectReference Include="..\..\src\Lykke.AlgoStore.KubernetesClient\Lykke.AlgoStore.KubernetesClient.csproj" />
   </ItemGroup>
   <ItemGroup>
