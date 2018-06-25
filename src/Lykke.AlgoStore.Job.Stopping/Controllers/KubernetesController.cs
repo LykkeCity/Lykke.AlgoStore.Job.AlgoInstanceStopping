@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.Job.Stopping.Controllers
 {
-    [Authorize]
+
     [Route("api/kubernetes")]
     [Produces("application/json")]
     public class KubernetesController : Controller
@@ -29,6 +29,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Controllers
         /// </summary>
         /// <param name="instanceId"></param>
         /// <returns></returns>
+        [Authorize]
         [HttpGet("getPods")]
         [SwaggerOperation("GetPods")]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]

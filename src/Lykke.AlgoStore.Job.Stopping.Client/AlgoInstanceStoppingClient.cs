@@ -31,7 +31,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Client
         /// </summary>
         /// <param name="instanceId"></param>
         /// <returns></returns>
-        public async Task<PodsResponse> GetAsync(string instanceId, string instanceAuthToken)
+        public async Task<PodsResponse> GetPodsAsync(string instanceId, string instanceAuthToken)
         {
             var response = await _apiClient.GetPodsWithHttpMessagesAsync(instanceId, SetAutorizationToken(instanceAuthToken));
             return PreparePodsResponse(response);
@@ -42,7 +42,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Client
         /// </summary>
         /// <param name="instanceId"></param>
         /// <returns></returns>
-        public async Task<DeleteAlgoInsatnceResponseModel> DeleteAlgoInstanceAsync(string instanceId, string instanceAuthToken)
+        public async Task<DeleteAlgoInstanceResponseModel> DeleteAlgoInstanceAsync(string instanceId, string instanceAuthToken)
         {
             var response = await _apiClient.DeleteAlgoInstacneWithHttpMessagesAsync(instanceId, SetAutorizationToken(instanceAuthToken));
             return PrepareDeleteResponse(response.Body);
@@ -54,16 +54,16 @@ namespace Lykke.AlgoStore.Job.Stopping.Client
         /// <param name="instanceId"></param>
         /// <param name="pod"></param>
         /// <returns></returns>
-        public async Task<DeleteAlgoInsatnceResponseModel> DeleteAlgoInstanceByInstanceIdAndPodAsync(string instanceId, string podNamespace, string instanceAuthToken)
+        public async Task<DeleteAlgoInstanceResponseModel> DeleteAlgoInstanceByInstanceIdAndPodAsync(string instanceId, string podNamespace, string instanceAuthToken)
         {
             var response = await _apiClient.DeleteAlgoInstacneByInstanceIdAndPodWithHttpMessagesAsync
                                             (instanceId, podNamespace, SetAutorizationToken(instanceAuthToken));
             return PrepareDeleteResponse(response.Body);
         }
 
-        private DeleteAlgoInsatnceResponseModel PrepareDeleteResponse(ErrorResponse response)
+        private DeleteAlgoInstanceResponseModel PrepareDeleteResponse(ErrorResponse response)
         {
-            var result = new DeleteAlgoInsatnceResponseModel();
+            var result = new DeleteAlgoInstanceResponseModel();
 
             if (!string.IsNullOrEmpty(response.ErrorMessage))
             {
@@ -110,7 +110,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Client
         private Dictionary<string, List<string>> SetAutorizationToken(string authToken)
         {
             var result = new Dictionary<string, List<string>>();
-            result.Add(authToken, new List<string>() { "Bearer" });
+            result.Add("Authorization", new List<string>() { "Bearer "+ authToken });
 
             return result;
         }

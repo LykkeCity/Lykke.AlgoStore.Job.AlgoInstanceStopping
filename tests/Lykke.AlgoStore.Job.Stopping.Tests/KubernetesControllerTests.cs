@@ -124,7 +124,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Tests
         }
 
         [Test]
-        public async Task Check_InsatnceId_And_Pod_Are_Not_Changed()
+        public async Task Check_InstanceId_And_Pod_Are_Not_Changed()
         {
             var kubernetesClientMock = new Mock<IKubernetesApiClient>();
 
