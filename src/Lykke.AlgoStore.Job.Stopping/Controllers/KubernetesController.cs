@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.Job.Stopping.Controllers
 {
-
+    [Authorize]
     [Route("api/kubernetes")]
     [Produces("application/json")]
     public class KubernetesController : Controller
@@ -29,11 +29,11 @@ namespace Lykke.AlgoStore.Job.Stopping.Controllers
         /// </summary>
         /// <param name="instanceId"></param>
         /// <returns></returns>
-        [Authorize]
         [HttpGet("getPods")]
         [SwaggerOperation("GetPods")]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(IEnumerable<PodResponseModel>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetPods([FromQuery] string instanceId)
         {
@@ -55,6 +55,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Controllers
         [HttpDelete("deleteAlgoInstacne")]
         [SwaggerOperation("DeleteAlgoInstacne")]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         public async Task<IActionResult> DeleteAlgoInstances([FromQuery]string instanceId)
         {
@@ -82,6 +83,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Controllers
         [HttpDelete("deleteByInstanceIdAndPod")]
         [SwaggerOperation("DeleteAlgoInstacneByInstanceIdAndPod")]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         public async Task<IActionResult> DeleteAlgoInstacneByInstanceIdAndPod([FromQuery]string instanceId, [FromQuery]string podNamespace)
         {

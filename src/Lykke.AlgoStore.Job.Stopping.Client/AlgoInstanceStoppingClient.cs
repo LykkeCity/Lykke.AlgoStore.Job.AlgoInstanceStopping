@@ -1,4 +1,5 @@
-﻿using Lykke.AlgoStore.Job.Stopping.Client.AutorestClient;
+﻿using Common.Log;
+using Lykke.AlgoStore.Job.Stopping.Client.AutorestClient;
 using Lykke.AlgoStore.Job.Stopping.Client.AutorestClient.Models;
 using Lykke.AlgoStore.Job.Stopping.Client.Models.ResponseModels;
 using Microsoft.Rest;
@@ -10,10 +11,12 @@ namespace Lykke.AlgoStore.Job.Stopping.Client
 {
     public class AlgoInstanceStoppingClient : IAlgoInstanceStoppingClient, IDisposable
     {
+        private readonly ILog _log;
         private StoppingJobAPI _apiClient;
 
-        public AlgoInstanceStoppingClient(string serviceUrl)
+        public AlgoInstanceStoppingClient(string serviceUrl, ILog log)
         {
+            _log = log;
             _apiClient = new StoppingJobAPI(new Uri(serviceUrl));
         }
 
@@ -45,7 +48,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Client
         public async Task<DeleteAlgoInstanceResponseModel> DeleteAlgoInstanceAsync(string instanceId, string instanceAuthToken)
         {
             var response = await _apiClient.DeleteAlgoInstacneWithHttpMessagesAsync(instanceId, SetAutorizationToken(instanceAuthToken));
-            return PrepareDeleteResponse(response.Body);
+            return PrepareDeleteResponse(response);
         }
 
         /// <summary>
@@ -58,17 +61,24 @@ namespace Lykke.AlgoStore.Job.Stopping.Client
         {
             var response = await _apiClient.DeleteAlgoInstacneByInstanceIdAndPodWithHttpMessagesAsync
                                             (instanceId, podNamespace, SetAutorizationToken(instanceAuthToken));
-            return PrepareDeleteResponse(response.Body);
+            return PrepareDeleteResponse(response);
         }
 
-        private DeleteAlgoInstanceResponseModel PrepareDeleteResponse(ErrorResponse response)
+        private DeleteAlgoInstanceResponseModel PrepareDeleteResponse(HttpOperationResponse<ErrorResponse> response)
         {
             var result = new DeleteAlgoInstanceResponseModel();
 
-            if (!string.IsNullOrEmpty(response.ErrorMessage))
+            if (response.Response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 result.IsSuccessfulDeletion = false;
-                result.ErrorMessage = response.ErrorMessage;
+                result.ErrorMessage = "Unauthorized";
+                return result;
+            }
+
+            if (response.Body != null && !string.IsNullOrEmpty(response.Body.ErrorMessage))
+            {
+                result.IsSuccessfulDeletion = false;
+                result.ErrorMessage = response.Body.ErrorMessage;
                 return result;
             }
 
@@ -100,6 +110,17 @@ namespace Lykke.AlgoStore.Job.Stopping.Client
                 };
             }
 
+            if (serviceResponse.Response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                return new PodsResponse
+                {
+                    Error = new ErrorModel
+                    {
+                        ErrorMessage = "Unauthorized"
+                    }
+                };
+            }
+
             throw new ArgumentException("Unknown response object");
         }
 
@@ -110,7 +131,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Client
         private Dictionary<string, List<string>> SetAutorizationToken(string authToken)
         {
             var result = new Dictionary<string, List<string>>();
-            result.Add("Authorization", new List<string>() { "Bearer "+ authToken });
+            result.Add("Authorization", new List<string>() { "Bearer " + authToken });
 
             return result;
         }
