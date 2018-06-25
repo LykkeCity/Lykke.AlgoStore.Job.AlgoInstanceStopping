@@ -65,7 +65,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Tests
         }
 
         [Test]
-        public async Task DeleteAlgoInstances_ReturnBadRequest_UnsuccessflDeletion()
+        public async Task DeleteAlgoInstances_ReturnBadRequest_UnsuccessfulDeletion()
         {
             var kubernetesClientMock = new Mock<IKubernetesApiClient>();
 
