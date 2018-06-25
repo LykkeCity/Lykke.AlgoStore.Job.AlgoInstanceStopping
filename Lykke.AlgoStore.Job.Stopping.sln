@@ -25,7 +25,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.AlgoStore.KubernetesC
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "5. Client", "5. Client", "{DEB4B3EF-E133-47EE-9BE2-AE84E52E3D27}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.AlgoStore.Job.Stopping.Client", "src\Lykke.AlgoStore.Job.Stopping.Client\Lykke.AlgoStore.Job.Stopping.Client.csproj", "{91EB20C5-0F6C-4CA5-A54A-5D569D1A63A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.AlgoStore.Job.Stopping.Client", "client\Lykke.AlgoStore.Job.Stopping.Client\Lykke.AlgoStore.Job.Stopping.Client.csproj", "{91EB20C5-0F6C-4CA5-A54A-5D569D1A63A6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
