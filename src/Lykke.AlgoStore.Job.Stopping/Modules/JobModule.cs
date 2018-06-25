@@ -39,7 +39,6 @@ namespace Lykke.AlgoStore.Job.Stopping.Modules
             RegisterExternalServices(builder);
             RegisterRepositories(builder);
 
-            RegisterStoppingProcess(builder);
             builder.Populate(_services);
         }
 
@@ -51,14 +50,6 @@ namespace Lykke.AlgoStore.Job.Stopping.Modules
                    .WithParameter("credentials", new TokenCredentials(_settings.AlgoStoreStoppingJob.Kubernetes.BasicAuthenticationValue))
                    .WithParameter("certificateHash", _settings.AlgoStoreStoppingJob.Kubernetes.CertificateHash)
                    .SingleInstance();
-        }
-
-        private void RegisterStoppingProcess(ContainerBuilder builder)
-        {
-            //builder.RegisterType<AtomaticAlgoInstanceStopping>()
-            //    .As<IStartable>()
-            //    .AutoActivate()
-            //    .SingleInstance();
         }
 
         private void RegisterRepositories(ContainerBuilder builder)
