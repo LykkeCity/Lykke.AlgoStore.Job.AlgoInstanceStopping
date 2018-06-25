@@ -1,13 +1,12 @@
 ﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using AzureStorage.Tables;
+using AzureStorage.Blob;
 using Common.Log;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Entities;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.Job.Stopping.Settings;
 using Lykke.AlgoStore.Job.Stopping.Settings.JobSettings;
 using Lykke.AlgoStore.KubernetesClient;
-using Lykke.AlgoStore.Security.InstanceAuth;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Rest;
@@ -37,10 +36,10 @@ namespace Lykke.AlgoStore.Job.Stopping.Modules
                    .As<ILog>()
                    .SingleInstance();
 
-            _services.AddInstanceAuthentication(_settings.AlgoStoreStoppingJob.StoppingServiceCache);
-
             RegisterExternalServices(builder);
             RegisterRepositories(builder);
+
+            RegisterStoppingProcess(builder);
             builder.Populate(_services);
         }
 
@@ -54,12 +53,23 @@ namespace Lykke.AlgoStore.Job.Stopping.Modules
                    .SingleInstance();
         }
 
+        private void RegisterStoppingProcess(ContainerBuilder builder)
+        {
+            //builder.RegisterType<AtomaticAlgoInstanceStopping>()
+            //    .As<IStartable>()
+            //    .AutoActivate()
+            //    .SingleInstance();
+        }
+
         private void RegisterRepositories(ContainerBuilder builder)
         {
             var reloadingDbManager = _settingsManager.ConnectionString(x => x.Db.DataStorageConnectionString);
 
-            builder.RegisterInstance(AzureTableStorage<AlgoClientInstanceEntity>.Create(reloadingDbManager, AlgoClientInstanceRepository.TableName, _log));
-            builder.RegisterType<AlgoClientInstanceRepository>().As<IAlgoClientInstanceRepository>();
+            builder.RegisterInstance(AzureBlobStorage.Create(reloadingDbManager));
+
+            builder.RegisterInstance<IAlgoClientInstanceRepository>(
+                   AzureRepoFactories.CreateAlgoClientInstanceRepository(reloadingDbManager, _log))
+               .SingleInstance();
         }
     }
 }

@@ -5,8 +5,8 @@ namespace Lykke.AlgoStore.Job.Stopping.Client
 {
     public interface IAlgoInstanceStoppingClient
     {
-        Task<PodsResponse> GetAsync(string instanceId);
-        Task<DeleteAlgoInsatnceResponseModel> DeleteAlgoInstanceAsync(string instanceId);
-        Task<DeleteAlgoInsatnceResponseModel> DeleteAlgoInstanceByInstanceIdAndPodAsync(string instanceId, string podNamespace);
+        Task<PodsResponse> GetAsync(string instanceId, string instanceAuthtoken);
+        Task<DeleteAlgoInsatnceResponseModel> DeleteAlgoInstanceAsync(string instanceId, string instanceAuthtoken);
+        Task<DeleteAlgoInsatnceResponseModel> DeleteAlgoInstanceByInstanceIdAndPodAsync(string instanceId, string podNamespace, string instanceAuthtoken);
     }
 }

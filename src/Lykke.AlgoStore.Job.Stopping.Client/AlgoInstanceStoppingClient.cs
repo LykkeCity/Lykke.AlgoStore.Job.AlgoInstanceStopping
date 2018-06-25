@@ -31,9 +31,9 @@ namespace Lykke.AlgoStore.Job.Stopping.Client
         /// </summary>
         /// <param name="instanceId"></param>
         /// <returns></returns>
-        public async Task<PodsResponse> GetAsync(string instanceId)
+        public async Task<PodsResponse> GetAsync(string instanceId, string instanceAuthToken)
         {
-            var response = await _apiClient.GetPodsWithHttpMessagesAsync(instanceId);
+            var response = await _apiClient.GetPodsWithHttpMessagesAsync(instanceId, SetAutorizationToken(instanceAuthToken));
             return PreparePodsResponse(response);
         }
 
@@ -42,10 +42,10 @@ namespace Lykke.AlgoStore.Job.Stopping.Client
         /// </summary>
         /// <param name="instanceId"></param>
         /// <returns></returns>
-        public async Task<DeleteAlgoInsatnceResponseModel> DeleteAlgoInstanceAsync(string instanceId)
+        public async Task<DeleteAlgoInsatnceResponseModel> DeleteAlgoInstanceAsync(string instanceId, string instanceAuthToken)
         {
-            var response = await _apiClient.DeleteAlgoInstacneAsync(instanceId);
-            return PrepareDeleteResponse(response);
+            var response = await _apiClient.DeleteAlgoInstacneWithHttpMessagesAsync(instanceId, SetAutorizationToken(instanceAuthToken));
+            return PrepareDeleteResponse(response.Body);
         }
 
         /// <summary>
@@ -54,10 +54,11 @@ namespace Lykke.AlgoStore.Job.Stopping.Client
         /// <param name="instanceId"></param>
         /// <param name="pod"></param>
         /// <returns></returns>
-        public async Task<DeleteAlgoInsatnceResponseModel> DeleteAlgoInstanceByInstanceIdAndPodAsync(string instanceId, string podNamespace)
+        public async Task<DeleteAlgoInsatnceResponseModel> DeleteAlgoInstanceByInstanceIdAndPodAsync(string instanceId, string podNamespace, string instanceAuthToken)
         {
-            var response = await _apiClient.DeleteAlgoInstacneByInstanceIdAndPodAsync(instanceId);
-            return PrepareDeleteResponse(response);
+            var response = await _apiClient.DeleteAlgoInstacneByInstanceIdAndPodWithHttpMessagesAsync
+                                            (instanceId, podNamespace, SetAutorizationToken(instanceAuthToken));
+            return PrepareDeleteResponse(response.Body);
         }
 
         private DeleteAlgoInsatnceResponseModel PrepareDeleteResponse(ErrorResponse response)
@@ -100,6 +101,18 @@ namespace Lykke.AlgoStore.Job.Stopping.Client
             }
 
             throw new ArgumentException("Unknown response object");
+        }
+
+        /// <summary>
+        /// Set autorization heaader options
+        /// </summary>
+        /// <param name="authToken">The authorization token that would be used</param>
+        private Dictionary<string, List<string>> SetAutorizationToken(string authToken)
+        {
+            var result = new Dictionary<string, List<string>>();
+            result.Add(authToken, new List<string>() { "Bearer" });
+
+            return result;
         }
     }
 }

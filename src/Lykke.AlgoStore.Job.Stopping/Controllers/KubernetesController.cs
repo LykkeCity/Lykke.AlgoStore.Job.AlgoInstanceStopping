@@ -2,6 +2,7 @@
 using Lykke.AlgoStore.Job.Stopping.Models.Kubernetes;
 using Lykke.AlgoStore.KubernetesClient;
 using Lykke.Common.Api.Contract.Responses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections.Generic;
@@ -11,11 +12,12 @@ using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.Job.Stopping.Controllers
 {
+    [Authorize]
     [Route("api/kubernetes")]
     [Produces("application/json")]
     public class KubernetesController : Controller
     {
-        IKubernetesApiClient _kubernetesApiClient;
+        private IKubernetesApiClient _kubernetesApiClient;
 
         public KubernetesController(IKubernetesApiClient kubernetesApiClient)
         {

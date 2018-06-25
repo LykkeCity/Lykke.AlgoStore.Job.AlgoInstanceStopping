@@ -1,23 +1,25 @@
-﻿using System;
-using System.Threading.Tasks;
-using Autofac;
+﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using AutoMapper;
 using AzureStorage.Tables;
 using Common.Log;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Mapper;
+using Lykke.AlgoStore.Job.Stopping.Modules;
+using Lykke.AlgoStore.Job.Stopping.Settings;
+using Lykke.AlgoStore.Security.InstanceAuth;
+using Lykke.Common.Api.Contract.Responses;
 using Lykke.Common.ApiLibrary.Middleware;
 using Lykke.Common.ApiLibrary.Swagger;
-using Lykke.Common.Api.Contract.Responses;
-using Lykke.AlgoStore.Job.Stopping.Settings;
-using Lykke.AlgoStore.Job.Stopping.Modules;
 using Lykke.Logs;
-using Lykke.SettingsReader;
 using Lykke.MonitoringServiceApiCaller;
+using Lykke.SettingsReader;
 using Lykke.SlackNotification.AzureQueue;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Lykke.AlgoStore.Security.InstanceAuth;
+using System;
+using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.Job.Stopping
 {
@@ -32,6 +34,11 @@ namespace Lykke.AlgoStore.Job.Stopping
 
         public Startup(IHostingEnvironment env)
         {
+            Mapper.Initialize(cfg =>
+            {
+                cfg.AddProfiles(typeof(AutoMapperModelProfile));
+            });
+
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddEnvironmentVariables();
@@ -54,7 +61,7 @@ namespace Lykke.AlgoStore.Job.Stopping
                 services.AddSwaggerGen(options =>
                 {
                     options.DefaultLykkeConfiguration("v1", "Stopping Job API");
-                    //options.OperationFilter<ApiKeyHeaderOperationFilter>();
+                    options.OperationFilter<ApiKeyHeaderOperationFilter>();
                 });
 
                 var builder = new ContainerBuilder();
@@ -93,8 +100,9 @@ namespace Lykke.AlgoStore.Job.Stopping
                 app.UseLykkeForwardedHeaders();
                 app.UseLykkeMiddleware("Stopping", ex => new ErrorResponse { ErrorMessage = "Technical problem" });
 
-
+                app.UseAuthentication();
                 app.UseMvc();
+
                 app.UseSwagger(c =>
                 {
                     c.PreSerializeFilters.Add((swagger, httpReq) => swagger.Host = httpReq.Host.Value);
