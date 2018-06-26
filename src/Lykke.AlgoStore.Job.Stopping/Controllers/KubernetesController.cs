@@ -52,7 +52,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Controllers
         /// Delete algo instance from kubernetes by instanceId
         /// </summary>
         /// <param name="instanceId"></param>
-        [HttpDelete("deleteAlgoInstacne")]
+        [HttpDelete("deleteAlgoInstance")]
         [SwaggerOperation("DeleteAlgoInstacne")]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
