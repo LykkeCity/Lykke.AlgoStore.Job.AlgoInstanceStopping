@@ -455,7 +455,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Client.AutorestClient
             }
             // Construct URL
             var _baseUrl = BaseUri.AbsoluteUri;
-            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "api/kubernetes/deleteAlgoInstacne").ToString();
+            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "api/kubernetes/deleteAlgoInstance").ToString();
             List<string> _queryParameters = new List<string>();
             if (instanceId != null)
             {
