@@ -1,6 +1,9 @@
-﻿using Lykke.AlgoStore.Job.Stopping.Infrastructure;
+﻿using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
+using Lykke.AlgoStore.Job.Stopping.Infrastructure;
 using Lykke.AlgoStore.Job.Stopping.Models.Kubernetes;
 using Lykke.AlgoStore.KubernetesClient;
+using Lykke.AlgoStore.Security.InstanceAuth;
 using Lykke.Common.Api.Contract.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,10 +21,12 @@ namespace Lykke.AlgoStore.Job.Stopping.Controllers
     public class KubernetesController : Controller
     {
         private IKubernetesApiClient _kubernetesApiClient;
+        private IAlgoClientInstanceRepository _algoInstanceRepository;
 
-        public KubernetesController(IKubernetesApiClient kubernetesApiClient)
+        public KubernetesController(IKubernetesApiClient kubernetesApiClient, IAlgoClientInstanceRepository algoInstanceRepository)
         {
             _kubernetesApiClient = kubernetesApiClient;
+            _algoInstanceRepository = algoInstanceRepository;
         }
 
         /// <summary>
@@ -72,6 +77,8 @@ namespace Lykke.AlgoStore.Job.Stopping.Controllers
             if (!result)
                 return BadRequest(ErrorResponse.Create(Phrases.UnsuccessfulDeletion));
 
+            await ChangeAlgoInstanceStatusToStopped();
+
             return Ok();
         }
 
@@ -98,7 +105,19 @@ namespace Lykke.AlgoStore.Job.Stopping.Controllers
             if (!result)
                 return BadRequest(ErrorResponse.Create(Phrases.UnsuccessfulDeletion));
 
+            await ChangeAlgoInstanceStatusToStopped();
+
             return Ok();
+        }
+
+        private async Task ChangeAlgoInstanceStatusToStopped()
+        {
+            var instanceData = await _algoInstanceRepository.GetAlgoInstanceDataByAuthTokenAsync(User.GetAuthToken());
+            if (instanceData != null)
+            {
+                instanceData.AlgoInstanceStatus = AlgoInstanceStatus.Stopped;
+                await _algoInstanceRepository.SaveAlgoInstanceDataAsync(instanceData);
+            }
         }
     }
 }
