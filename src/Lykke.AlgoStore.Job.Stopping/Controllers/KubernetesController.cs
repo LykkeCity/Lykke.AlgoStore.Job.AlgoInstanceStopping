@@ -1,4 +1,5 @@
-﻿using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
+﻿using System;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.Job.Stopping.Infrastructure;
 using Lykke.AlgoStore.Job.Stopping.Models.Kubernetes;
@@ -116,6 +117,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Controllers
             if (instanceData != null)
             {
                 instanceData.AlgoInstanceStatus = AlgoInstanceStatus.Stopped;
+                instanceData.AlgoInstanceStopDate = DateTime.UtcNow;
                 await _algoInstanceRepository.SaveAlgoInstanceDataAsync(instanceData);
             }
         }
