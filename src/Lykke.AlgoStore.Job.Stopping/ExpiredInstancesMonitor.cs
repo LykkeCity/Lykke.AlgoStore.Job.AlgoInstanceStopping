@@ -40,17 +40,14 @@ namespace Lykke.AlgoStore.Job.Stopping
 
         private async Task ExecuteEvery()
         {
-            await Task.Run(async () =>
+            while (true)
             {
-                while (true)
-                {
-                    var expiredInstances = await GetExpiredAlgoInstancesAsync();
+                var expiredInstances = await GetExpiredAlgoInstancesAsync();
 
-                    await TryStopExpiredInstances(expiredInstances);
+                await TryStopExpiredInstances(expiredInstances);
 
-                    await Task.Delay(TimeSpan.FromSeconds(_settings.CheckIntervalInSeconds));
-                }
-            });
+                await Task.Delay(TimeSpan.FromSeconds(_settings.CheckIntervalInSeconds));
+            }
         }
 
         public async Task TryStopExpiredInstances(List<AlgoInstanceStoppingData> expiredInstances)
@@ -60,7 +57,8 @@ namespace Lykke.AlgoStore.Job.Stopping
                 var instancePod = await GetInstancePodAsync(instance.InstanceId);
                 if (instancePod == null)
                 {
-                    await _log.WriteWarningAsync(nameof(ExpiredInstancesMonitor), _loggingContext, $"Instance {instance.InstanceId} of client id {instance.ClientId} is marked as started in db, but its pod was not found in kubernetis.");
+                    await _log.WriteWarningAsync(nameof(ExpiredInstancesMonitor), _loggingContext, $"Instance {instance.InstanceId} of client id {instance.ClientId} is marked as started in db, but its pod was not found in kubernetеs. Will set instance status in db to Stopped.");
+                    await MarkInstanceAsStoppedInDbAsync(instance);
                     continue;
                 }
                 var deleted = await DeleteInstancePodAsync(instance, instancePod);
@@ -68,13 +66,17 @@ namespace Lykke.AlgoStore.Job.Stopping
                 {
                     await MarkInstanceAsStoppedInDbAsync(instance);
                 }
+                else
+                {
+                    await _log.WriteWarningAsync(nameof(ExpiredInstancesMonitor), _loggingContext, $"Unable to stop kubernetes pod for Instance {instance.InstanceId} of client id {instance.ClientId}.");
+                }
             }
         }
 
         public async Task<List<AlgoInstanceStoppingData>> GetExpiredAlgoInstancesAsync()
         {
-            var instacnes = (await _algoClientInstanceRepository.GetAllAlgoInstancesPastEndDate(DateTime.UtcNow)).ToList();
-            return instacnes.Where(i=>i.AlgoInstanceStatus == AlgoInstanceStatus.Started).ToList();     
+            var instances = await _algoClientInstanceRepository.GetAllAlgoInstancesPastEndDate(DateTime.UtcNow);
+            return instances.Where(i=>i.AlgoInstanceStatus == AlgoInstanceStatus.Started).ToList();     
         }
 
         public async Task<Iok8skubernetespkgapiv1Pod> GetInstancePodAsync(string instanceId)
@@ -97,7 +99,7 @@ namespace Lykke.AlgoStore.Job.Stopping
             }
             else
             {
-                await _log.WriteWarningAsync(nameof(ExpiredInstancesMonitor), _loggingContext, $"Could not stop pod in kubernetis for expired instance id {stoppingInstance.InstanceId} of client id {stoppingInstance.ClientId}");
+                await _log.WriteWarningAsync(nameof(ExpiredInstancesMonitor), _loggingContext, $"Could not stop pod in kubernetеs for expired instance id {stoppingInstance.InstanceId} of client id {stoppingInstance.ClientId}");
                 return false;
             }
         }
