@@ -131,6 +131,8 @@ namespace Lykke.AlgoStore.Job.Stopping
                 await Log.WriteMonitorAsync("", Program.EnvInfo, "Started");
 
                 await AutoRegistrationInMonitoring.RegisterAsync(Configuration, _monitoringServiceUrl, Log);
+
+                ApplicationContainer.Resolve<ExpiredInstancesMonitor>().StartAsync();
             }
             catch (Exception ex)
             {
