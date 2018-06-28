@@ -145,7 +145,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Tests
                 {
                     var instances = GetMockListOfExpiredInstances().ToList();
                     var found = instances.FirstOrDefault(i => i.ClientId == clientId && i.InstanceId == instanceId);
-                    return Task.FromResult(found ==null ? default(AlgoClientInstanceData) : new AlgoClientInstanceData { ClientId = found.ClientId, InstanceId = found.InstanceId, AlgoInstanceStatus = found.AlgoInstanceStatus });
+                    return Task.FromResult(found ==null ? default(AlgoClientInstanceData) : new AlgoClientInstanceData { AlgoId = found.AlgoId, ClientId = found.ClientId, InstanceId = found.InstanceId, AlgoInstanceStatus = found.AlgoInstanceStatus });
                 });
 
 
