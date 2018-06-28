@@ -38,6 +38,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Modules
 
             RegisterExternalServices(builder);
             RegisterRepositories(builder);
+            RegisterStoppingProcess(builder);
 
             builder.Populate(_services);
         }
@@ -61,6 +62,12 @@ namespace Lykke.AlgoStore.Job.Stopping.Modules
             builder.RegisterInstance<IAlgoClientInstanceRepository>(
                    AzureRepoFactories.CreateAlgoClientInstanceRepository(reloadingDbManager, _log))
                .SingleInstance();
+        }
+
+        private void RegisterStoppingProcess(ContainerBuilder builder)
+        {
+            builder.RegisterInstance(_settingsManager.CurrentValue.ExpiredInstancesMonitor);
+            builder.RegisterType<ExpiredInstancesMonitor>().SingleInstance();
         }
     }
 }
