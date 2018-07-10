@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <Version>1.0.1</Version>
+    <AssemblyName>Lykke.AlgoStore.KubernetesClient</AssemblyName>
+    <RootNamespace>Lykke.AlgoStore.KubernetesClient</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Models" Version="1.0.65" />
+    <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.11" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="AutorestClient\" />
+    <Folder Include="AutorestClient\Models\" />
+  </ItemGroup>
+
+</Project>
