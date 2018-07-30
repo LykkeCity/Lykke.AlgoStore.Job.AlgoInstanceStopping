@@ -40,6 +40,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.1.1" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Lykke.AlgoStore.Service.Statistics\client\Lykke.AlgoStore.Service.Statistics.Client\Lykke.AlgoStore.Service.Statistics.Client.csproj" />
     <ProjectReference Include="..\Lykke.AlgoStore.Job.Stopping.AzureRepositories\Lykke.AlgoStore.Job.Stopping.AzureRepositories.csproj" />
     <ProjectReference Include="..\Lykke.AlgoStore.Job.Stopping.Core\Lykke.AlgoStore.Job.Stopping.Core.csproj" />
     <ProjectReference Include="..\Lykke.AlgoStore.Job.Stopping.Services\Lykke.AlgoStore.Job.Stopping.Services.csproj" />

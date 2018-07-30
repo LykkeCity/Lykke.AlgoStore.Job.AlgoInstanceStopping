@@ -1,5 +1,6 @@
 ﻿using Lykke.AlgoStore.Job.Stopping.Settings.JobSettings;
 using Lykke.AlgoStore.Job.Stopping.Settings.SlackNotifications;
+using Lykke.AlgoStore.Service.Statistics.Client;
 using Lykke.SettingsReader.Attributes;
 
 namespace Lykke.AlgoStore.Job.Stopping.Settings
@@ -12,5 +13,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Settings
 
         [Optional]
         public MonitoringServiceClientSettings MonitoringServiceClient { get; set; }
+
+        public StatisticsServiceClientSettings AlgoStoreStatisticsClient { get; set; }
     }
 }
