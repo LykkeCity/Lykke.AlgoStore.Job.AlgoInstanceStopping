@@ -19,7 +19,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Models" Version="1.0.73" />
-    <PackageReference Include="Lykke.AlgoStore.Security.InstanceAuth" Version="1.0.2" />
+    <PackageReference Include="Lykke.AlgoStore.Security.InstanceAuth" Version="1.0.5" />
+    <PackageReference Include="Lykke.AlgoStore.Service.Statistics.Client" Version="1.0.3" />
     <PackageReference Include="Lykke.Common" Version="7.0.2" />
     <PackageReference Include="Lykke.Common.ApiLibrary" Version="1.10.1" />
     <PackageReference Include="Lykke.Logs" Version="5.1.1" />
@@ -39,7 +40,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.1.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Lykke.AlgoStore.Service.Statistics\client\Lykke.AlgoStore.Service.Statistics.Client\Lykke.AlgoStore.Service.Statistics.Client.csproj" />
     <ProjectReference Include="..\Lykke.AlgoStore.Job.Stopping.AzureRepositories\Lykke.AlgoStore.Job.Stopping.AzureRepositories.csproj" />
     <ProjectReference Include="..\Lykke.AlgoStore.Job.Stopping.Core\Lykke.AlgoStore.Job.Stopping.Core.csproj" />
     <ProjectReference Include="..\Lykke.AlgoStore.Job.Stopping.Services\Lykke.AlgoStore.Job.Stopping.Services.csproj" />

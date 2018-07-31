@@ -8,7 +8,6 @@ using Lykke.AlgoStore.KubernetesClient.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Lykke.AlgoStore.Service.Statistics.Client;
 using Lykke.Common.Log;
@@ -17,7 +16,7 @@ namespace Lykke.AlgoStore.Job.Stopping
 {
     public class ExpiredInstancesMonitor
     {
-        private readonly IStatisticsClient _statisticsApiClient;
+        private readonly string _statisticsServiceUrl;
         private readonly IAlgoClientInstanceRepository _algoClientInstanceRepository;
         private readonly IKubernetesApiClient _kubernetesApiClient;
         private readonly ExpiredInstancesMonitorSettings _settings;
@@ -27,7 +26,7 @@ namespace Lykke.AlgoStore.Job.Stopping
         public ExpiredInstancesMonitor(
             IAlgoClientInstanceRepository algoClientInstanceRepository,
             IKubernetesApiClient kubernetesApiClient,
-            IStatisticsClient statisticsApiClient,
+            string statisticsServiceUrl,
             ExpiredInstancesMonitorSettings settings,
             ILog log)
         {
@@ -35,7 +34,7 @@ namespace Lykke.AlgoStore.Job.Stopping
             _kubernetesApiClient = kubernetesApiClient;
             _settings = settings;
             _log = log;
-            _statisticsApiClient = statisticsApiClient;
+            _statisticsServiceUrl = statisticsServiceUrl;
         }
 
         public async Task StartAsync()
@@ -63,8 +62,12 @@ namespace Lykke.AlgoStore.Job.Stopping
                 if (instancePod == null)
                 {
                     await _log.WriteWarningAsync(nameof(ExpiredInstancesMonitor), _loggingContext, $"Instance {instance.InstanceId} of client id {instance.ClientId} is marked as started in db, but its pod was not found in kubernetеs. Will set instance status in db to Stopped.");
-                    await MarkInstanceAsStoppedInDbAsync(instance);
-                    await UpdateSummaryStatisticsAsync(instance.ClientId, instance.InstanceId);
+
+                    var markAsStoppedSucceded = await MarkInstanceAsStoppedInDbAsync(instance);
+
+                    if (markAsStoppedSucceded)
+                        await UpdateSummaryStatisticsAsync(instance.ClientId, instance.InstanceId);
+
                     continue;
                 }
                 var deleted = await DeleteInstancePodAsync(instance, instancePod);
@@ -83,7 +86,7 @@ namespace Lykke.AlgoStore.Job.Stopping
         public async Task<List<AlgoInstanceStoppingData>> GetExpiredAlgoInstancesAsync()
         {
             var instances = await _algoClientInstanceRepository.GetAllAlgoInstancesPastEndDate(DateTime.UtcNow);
-            return instances.Where(i=>i.AlgoInstanceStatus == AlgoInstanceStatus.Started).ToList();     
+            return instances.Where(i => i.AlgoInstanceStatus == AlgoInstanceStatus.Started).ToList();
         }
 
         public async Task<Iok8skubernetespkgapiv1Pod> GetInstancePodAsync(string instanceId)
@@ -100,7 +103,7 @@ namespace Lykke.AlgoStore.Job.Stopping
         {
             var deleted = await _kubernetesApiClient.DeleteAsync(stoppingInstance.InstanceId, instancePod.Metadata.NamespaceProperty);
             if (deleted)
-            {              
+            {
                 await _log.WriteInfoAsync(nameof(ExpiredInstancesMonitor), _loggingContext, $"Successfully stopped instance pod for instance id {stoppingInstance.InstanceId} of client id {stoppingInstance.ClientId}");
                 return true;
             }
@@ -114,7 +117,7 @@ namespace Lykke.AlgoStore.Job.Stopping
         public async Task<bool> MarkInstanceAsStoppedInDbAsync(AlgoInstanceStoppingData stoppingInstance)
         {
             var instance = await _algoClientInstanceRepository.GetAlgoInstanceDataByClientIdAsync(stoppingInstance.ClientId, stoppingInstance.InstanceId);
-            if(instance == null || instance.InstanceId==null || instance.AlgoId == null)
+            if (instance == null || instance.InstanceId == null || instance.AlgoId == null || string.IsNullOrEmpty(instance.AuthToken))
             {
                 await _log.WriteWarningAsync(nameof(ExpiredInstancesMonitor), _loggingContext, $"Instance id {stoppingInstance.InstanceId} of client id {stoppingInstance.ClientId} not found in db and cannot be marked as stopped.");
                 return false;
@@ -130,7 +133,15 @@ namespace Lykke.AlgoStore.Job.Stopping
         {
             try
             {
-                await _statisticsApiClient.UpdateSummaryAsync(clientId, instanceId);
+                var instanceData = await _algoClientInstanceRepository.GetAlgoInstanceDataByClientIdAsync(clientId, instanceId);
+                var authHandler = new AlgoAuthorizationHeaderHttpClientHandler(instanceData.AuthToken);
+                var instanceEventHandler = HttpClientGenerator.HttpClientGenerator
+                    .BuildForUrl(_statisticsServiceUrl)
+                    .WithAdditionalDelegatingHandler(authHandler);
+
+                var statisticsClient = instanceEventHandler.Create().Generate<IStatisticsClient>();
+
+                await statisticsClient.UpdateSummaryAsync(clientId, instanceId);
             }
             catch (Exception ex)
             {

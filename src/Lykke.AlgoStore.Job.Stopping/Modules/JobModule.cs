@@ -11,9 +11,6 @@ using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Rest;
 using System;
-using System.Dynamic;
-using Lykke.AlgoStore.Service.Statistics.Client;
-using Newtonsoft.Json;
 
 namespace Lykke.AlgoStore.Job.Stopping.Modules
 {
@@ -54,18 +51,6 @@ namespace Lykke.AlgoStore.Job.Stopping.Modules
                    .WithParameter("credentials", new TokenCredentials(_settings.AlgoStoreStoppingJob.Kubernetes.BasicAuthenticationValue))
                    .WithParameter("certificateHash", _settings.AlgoStoreStoppingJob.Kubernetes.CertificateHash)
                    .SingleInstance();
-
-            dynamic dynamicSettings =
-                JsonConvert.DeserializeObject<ExpandoObject>(Environment.GetEnvironmentVariable("ALGO_INSTANCE_PARAMS"));
-
-            var authHandler = new AlgoAuthorizationHeaderHttpClientHandler(dynamicSettings.AuthToken);
-
-            var instanceEventHandler = HttpClientGenerator.HttpClientGenerator
-                .BuildForUrl(_settings.AlgoStoreStatisticsClient.ServiceUrl)
-                .WithAdditionalDelegatingHandler(authHandler);
-
-            builder.RegisterInstance(instanceEventHandler.Create().Generate<IStatisticsClient>())
-                .As<IStatisticsClient>();
         }
 
         private void RegisterRepositories(ContainerBuilder builder)
@@ -82,7 +67,9 @@ namespace Lykke.AlgoStore.Job.Stopping.Modules
         private void RegisterStoppingProcess(ContainerBuilder builder)
         {
             builder.RegisterInstance(_settingsManager.CurrentValue.ExpiredInstancesMonitor);
-            builder.RegisterType<ExpiredInstancesMonitor>().SingleInstance();
+            builder.RegisterType<ExpiredInstancesMonitor>()
+                .WithParameter("statisticsServiceUrl", _settings.AlgoStoreStatisticsClient.ServiceUrl)
+                .SingleInstance();
         }
     }
 }

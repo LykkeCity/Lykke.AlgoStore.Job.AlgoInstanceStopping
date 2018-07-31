@@ -27,8 +27,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "5. Client", "5. Client", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.AlgoStore.Job.Stopping.Client", "client\Lykke.AlgoStore.Job.Stopping.Client\Lykke.AlgoStore.Job.Stopping.Client.csproj", "{91EB20C5-0F6C-4CA5-A54A-5D569D1A63A6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.AlgoStore.Service.Statistics.Client", "..\Lykke.AlgoStore.Service.Statistics\client\Lykke.AlgoStore.Service.Statistics.Client\Lykke.AlgoStore.Service.Statistics.Client.csproj", "{9E6AA391-2C89-4017-AC67-A2F454B605AE}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,10 +61,6 @@ Global
 		{91EB20C5-0F6C-4CA5-A54A-5D569D1A63A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91EB20C5-0F6C-4CA5-A54A-5D569D1A63A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91EB20C5-0F6C-4CA5-A54A-5D569D1A63A6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9E6AA391-2C89-4017-AC67-A2F454B605AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9E6AA391-2C89-4017-AC67-A2F454B605AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9E6AA391-2C89-4017-AC67-A2F454B605AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9E6AA391-2C89-4017-AC67-A2F454B605AE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -78,7 +72,6 @@ Global
 		{AAC9F450-14D7-4482-BC12-7C55006864E2} = {AB790991-CEB2-44A5-9C0C-A2D26DB86D41}
 		{6C35BC08-0DBD-4CF0-9C38-F04DC95C90B7} = {3E52F6D3-0315-4A1E-8C2B-107B615E08E3}
 		{91EB20C5-0F6C-4CA5-A54A-5D569D1A63A6} = {DEB4B3EF-E133-47EE-9BE2-AE84E52E3D27}
-		{9E6AA391-2C89-4017-AC67-A2F454B605AE} = {3E52F6D3-0315-4A1E-8C2B-107B615E08E3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D2419990-C093-4EE2-AFE9-80857ECBB147}
