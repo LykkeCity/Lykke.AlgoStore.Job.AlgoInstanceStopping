@@ -72,15 +72,6 @@ namespace Lykke.AlgoStore.Job.Stopping.Tests
         }
 
         [Test]
-        public void MarkInstanceAsStoppedInDbAsync_True_Test()
-        {
-            var stoppingInstance = new AlgoInstanceStoppingData { InstanceId = InstanceId1, ClientId = ClientId1 };
-            
-            var result = defaultMonitorMock.MarkInstanceAsStoppedInDbAsync(stoppingInstance).Result;
-            Assert.IsTrue(result);
-        }
-
-        [Test]
         public void MarkInstanceAsStoppedInDbAsync_False_Test()
         {
             var result = defaultMonitorMock.MarkInstanceAsStoppedInDbAsync(new AlgoInstanceStoppingData()).Result;
