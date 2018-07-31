@@ -1,5 +1,4 @@
 ﻿using Common.Log;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.Job.Stopping.Settings.JobSettings;
@@ -29,7 +28,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Tests
         {
             defaultRepoMock = GetAlgoClientInstanceRepositoryMock();
             defaultKuberClient = GetKubernetesApiClientMock();
-            defaultMonitorMock = new ExpiredInstancesMonitor(defaultRepoMock, defaultKuberClient, GetMockSettings(), GetMockLog());
+            defaultMonitorMock = new ExpiredInstancesMonitor(defaultRepoMock, defaultKuberClient, "http://fake.host", GetMockSettings(), GetMockLog());
         }
 
         [Test]
