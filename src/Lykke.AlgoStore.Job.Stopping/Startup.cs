@@ -71,7 +71,7 @@ namespace Lykke.AlgoStore.Job.Stopping
 
                 services.AddInstanceAuthentication(appSettings.CurrentValue.AlgoStoreStoppingJob.StoppingServiceCache);
 
-                Log = CreateLogWithSlack(services, appSettings);
+              Log = CreateLogWithSlack(services, appSettings);
 
                 builder.RegisterModule(new JobModule(appSettings.CurrentValue, appSettings.Nested(x => x.AlgoStoreStoppingJob), Log));
 
