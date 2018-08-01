@@ -5,6 +5,7 @@ using Microsoft.Rest.Serialization;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -67,7 +68,7 @@ namespace Lykke.AlgoStore.KubernetesClient
             try
             {
                 await DeleteServiceAsync(instanceId, namespaceParameter);
-                return await DeleteDeploymentAsync(instanceId, namespaceParameter);
+                return await DeletePodAsync(instanceId, namespaceParameter);
             }
             catch (Exception ex)
             {
@@ -77,12 +78,12 @@ namespace Lykke.AlgoStore.KubernetesClient
         }
 
         /// <summary>
-        /// Deletes the deployment asynchronous.
+        /// Deletes the pod asynchronous.
         /// </summary>
         /// <param name="instanceId">The instance identifier.</param>
         /// <param name="namespaceParameter">The pod.</param>
         /// <returns></returns>
-        public async Task<bool> DeleteDeploymentAsync(string instanceId, string namespaceParameter)
+        public async Task<bool> DeletePodAsync(string instanceId, string namespaceParameter)
         {
             var options = new Iok8sapimachinerypkgapismetav1DeleteOptions
             {
@@ -90,7 +91,7 @@ namespace Lykke.AlgoStore.KubernetesClient
             };
 
             using (var kubeResponse =
-                await DeleteAppsV1beta1NSDeploymentWithHttpMessagesAsync(options, instanceId, namespaceParameter))
+                await DeleteAppsV1PodsWithHttpMessagesAsync(options, instanceId, namespaceParameter))
             {
                 if (!kubeResponse.Response.IsSuccessStatusCode || kubeResponse.Body == null)
                     return false;
@@ -106,7 +107,7 @@ namespace Lykke.AlgoStore.KubernetesClient
         /// <returns></returns>
         public async Task<bool> DeleteServiceAsync(string instanceId, string namespaceParameter)
         {
-            var serviceName = $"algo-{instanceId}";
+            var serviceName = $"pod-{instanceId}";
 
             using (var kubeResponse =
                 await DeleteCoreV1NSServiceWithHttpMessagesAsync(serviceName, namespaceParameter))
@@ -121,7 +122,7 @@ namespace Lykke.AlgoStore.KubernetesClient
         }
 
         /// <summary>
-        /// Deletes the deployment with HTTP messages asynchronous.
+        /// Deletes the pod with HTTP messages asynchronous.
         /// this is modification of auto generated to avoid deserialization exception
         /// </summary>
         /// <param name="body">The body.</param>
@@ -136,7 +137,7 @@ namespace Lykke.AlgoStore.KubernetesClient
         /// namespaceParameter
         /// </exception>
         /// <exception cref="SerializationException">Unable to deserialize the response.</exception>
-        private async Task<HttpOperationResponse<string>> DeleteAppsV1beta1NSDeploymentWithHttpMessagesAsync(Iok8sapimachinerypkgapismetav1DeleteOptions body, string name, string namespaceParameter)
+        private async Task<HttpOperationResponse<string>> DeleteAppsV1PodsWithHttpMessagesAsync(Iok8sapimachinerypkgapismetav1DeleteOptions body, string name, string namespaceParameter)
         {
             if (body == null)
             {
@@ -153,7 +154,7 @@ namespace Lykke.AlgoStore.KubernetesClient
 
             // Construct URL
             var baseUrl = BaseUri.AbsoluteUri;
-            var url = new System.Uri(new System.Uri(baseUrl + (baseUrl.EndsWith("/") ? "" : "/")), "apis/apps/v1beta1/namespaces/{namespace}/deployments/{name}").ToString();
+            var url = new System.Uri(new System.Uri(baseUrl + (baseUrl.EndsWith("/") ? "" : "/")), "api/v1/namespaces/{namespace}/pods/{name}").ToString();
             url = url.Replace("{name}", System.Uri.EscapeDataString(name));
             url = url.Replace("{namespace}", System.Uri.EscapeDataString(namespaceParameter));
             List<string> _queryParameters = new List<string>();
