@@ -67,7 +67,9 @@ namespace Lykke.AlgoStore.Job.Stopping.Modules
         private void RegisterStoppingProcess(ContainerBuilder builder)
         {
             builder.RegisterInstance(_settingsManager.CurrentValue.ExpiredInstancesMonitor);
-            builder.RegisterType<ExpiredInstancesMonitor>().SingleInstance();
+            builder.RegisterType<ExpiredInstancesMonitor>()
+                .WithParameter("statisticsServiceUrl", _settings.AlgoStoreStatisticsClient.ServiceUrl)
+                .SingleInstance();
         }
     }
 }
