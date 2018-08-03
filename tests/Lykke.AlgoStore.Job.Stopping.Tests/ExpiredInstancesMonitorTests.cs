@@ -1,5 +1,4 @@
 ﻿using Common.Log;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.Job.Stopping.Settings.JobSettings;
@@ -29,7 +28,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Tests
         {
             defaultRepoMock = GetAlgoClientInstanceRepositoryMock();
             defaultKuberClient = GetKubernetesApiClientMock();
-            defaultMonitorMock = new ExpiredInstancesMonitor(defaultRepoMock, defaultKuberClient, GetMockSettings(), GetMockLog());
+            defaultMonitorMock = new ExpiredInstancesMonitor(defaultRepoMock, defaultKuberClient, "http://fake.host", GetMockSettings(), GetMockLog());
         }
 
         [Test]
@@ -70,15 +69,6 @@ namespace Lykke.AlgoStore.Job.Stopping.Tests
 
             var result = defaultMonitorMock.DeleteInstancePodAsync(stoppingInstance, instancePod).Result;
             Assert.IsFalse(result);
-        }
-
-        [Test]
-        public void MarkInstanceAsStoppedInDbAsync_True_Test()
-        {
-            var stoppingInstance = new AlgoInstanceStoppingData { InstanceId = InstanceId1, ClientId = ClientId1 };
-            
-            var result = defaultMonitorMock.MarkInstanceAsStoppedInDbAsync(stoppingInstance).Result;
-            Assert.IsTrue(result);
         }
 
         [Test]
