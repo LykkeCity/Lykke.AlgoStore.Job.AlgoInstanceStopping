@@ -4,6 +4,8 @@ using AzureStorage.Blob;
 using Common.Log;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
+using Lykke.AlgoStore.Job.Stopping.Core.Services;
+using Lykke.AlgoStore.Job.Stopping.Services.Services;
 using Lykke.AlgoStore.Job.Stopping.Settings;
 using Lykke.AlgoStore.Job.Stopping.Settings.JobSettings;
 using Lykke.AlgoStore.KubernetesClient;
@@ -51,6 +53,10 @@ namespace Lykke.AlgoStore.Job.Stopping.Modules
                    .WithParameter("credentials", new TokenCredentials(_settings.AlgoStoreStoppingJob.Kubernetes.BasicAuthenticationValue))
                    .WithParameter("certificateHash", _settings.AlgoStoreStoppingJob.Kubernetes.CertificateHash)
                    .SingleInstance();
+
+            builder.RegisterType<StatisticsService>()
+                .As<IStatisticsService>()
+                .WithParameter("statisticsServiceUrl", _settings.AlgoStoreStatisticsClient.ServiceUrl);
         }
 
         private void RegisterRepositories(ContainerBuilder builder)
@@ -67,8 +73,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Modules
         private void RegisterStoppingProcess(ContainerBuilder builder)
         {
             builder.RegisterInstance(_settingsManager.CurrentValue.ExpiredInstancesMonitor);
-            builder.RegisterType<ExpiredInstancesMonitor>()
-                .WithParameter("statisticsServiceUrl", _settings.AlgoStoreStatisticsClient.ServiceUrl)
+            builder.RegisterType<ExpiredInstancesMonitor>()               
                 .SingleInstance();
         }
     }
