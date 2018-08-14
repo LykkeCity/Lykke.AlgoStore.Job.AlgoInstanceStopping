@@ -99,7 +99,7 @@ namespace Lykke.AlgoStore.Job.Stopping
                 algoInstance.AlgoInstanceStopDate = DateTime.UtcNow;
 
                 await _algoClientInstanceRepository.SaveAlgoInstanceDataAsync(algoInstance);
-                await UpdateSummaryStatisticsAsync(algoInstance.ClientId, algoInstance.InstanceId);
+                await _statisticsService.UpdateSummaryStatisticsAsync(algoInstance.ClientId, algoInstance.InstanceId);
 
                 if (terminatedReason == "OOMKilled")
                 {
