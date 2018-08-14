@@ -28,7 +28,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Tests
         {
             defaultRepoMock = GetAlgoClientInstanceRepositoryMock();
             defaultKuberClient = GetKubernetesApiClientMock();
-            defaultMonitorMock = new ExpiredInstancesMonitor(defaultRepoMock, defaultKuberClient, "http://fake.host", GetMockSettings(), GetMockLog());
+            defaultMonitorMock = new ExpiredInstancesMonitor(defaultRepoMock, defaultKuberClient, null, "http://fake.host", GetMockSettings(), GetMockLog());
         }
 
         [Test]

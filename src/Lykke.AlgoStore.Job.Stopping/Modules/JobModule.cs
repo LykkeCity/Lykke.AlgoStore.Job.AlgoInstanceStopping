@@ -7,6 +7,7 @@ using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.Job.Stopping.Settings;
 using Lykke.AlgoStore.Job.Stopping.Settings.JobSettings;
 using Lykke.AlgoStore.KubernetesClient;
+using Lykke.AlgoStore.Service.Logging.Client;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Rest;
@@ -51,6 +52,8 @@ namespace Lykke.AlgoStore.Job.Stopping.Modules
                    .WithParameter("credentials", new TokenCredentials(_settings.AlgoStoreStoppingJob.Kubernetes.BasicAuthenticationValue))
                    .WithParameter("certificateHash", _settings.AlgoStoreStoppingJob.Kubernetes.CertificateHash)
                    .SingleInstance();
+
+            builder.RegisterLoggingClient(_settings.AlgoStoreLoggingServiceClient, _log);
         }
 
         private void RegisterRepositories(ContainerBuilder builder)
