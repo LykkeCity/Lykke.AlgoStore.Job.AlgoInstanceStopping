@@ -13,33 +13,35 @@ using Lykke.AlgoStore.Service.Statistics.Client;
 using Newtonsoft.Json.Linq;
 using Lykke.AlgoStore.Service.Logging.Client;
 using Lykke.Service.Logging.Client.AutorestClient.Models;
+using Lykke.AlgoStore.Job.Stopping.Core.Services;
 
 namespace Lykke.AlgoStore.Job.Stopping
 {
     public class ExpiredInstancesMonitor
     {
-        private readonly string _statisticsServiceUrl;
+        private const string _loggingContext = "Check for expired instances";
+
         private readonly IAlgoClientInstanceRepository _algoClientInstanceRepository;
         private readonly IKubernetesApiClient _kubernetesApiClient;
         private readonly ILoggingClient _loggingClient;
         private readonly ExpiredInstancesMonitorSettings _settings;
-        private const string _loggingContext = "Check for expired instances";
+        private readonly IStatisticsService _statisticsService;
         private readonly ILog _log;
 
         public ExpiredInstancesMonitor(
             IAlgoClientInstanceRepository algoClientInstanceRepository,
             IKubernetesApiClient kubernetesApiClient,
             ILoggingClient loggingClient,
-            string statisticsServiceUrl,
             ExpiredInstancesMonitorSettings settings,
+            IStatisticsService statisticsService,
             ILog log)
         {
             _algoClientInstanceRepository = algoClientInstanceRepository;
             _kubernetesApiClient = kubernetesApiClient;
             _loggingClient = loggingClient;
             _settings = settings;
+            _statisticsService = statisticsService;
             _log = log;
-            _statisticsServiceUrl = statisticsServiceUrl;
         }
 
         public async Task StartAsync()
@@ -124,7 +126,7 @@ namespace Lykke.AlgoStore.Job.Stopping
                     var markAsStoppedSucceded = await MarkInstanceAsStoppedInDbAsync(instance);
 
                     if (markAsStoppedSucceded)
-                        await UpdateSummaryStatisticsAsync(instance.ClientId, instance.InstanceId);
+                        await _statisticsService.UpdateSummaryStatisticsAsync(instance.ClientId, instance.InstanceId);
 
                     continue;
                 }
@@ -133,7 +135,7 @@ namespace Lykke.AlgoStore.Job.Stopping
                 if (deleted)
                 {
                     await MarkInstanceAsStoppedInDbAsync(instance);
-                    await UpdateSummaryStatisticsAsync(instance.ClientId, instance.InstanceId);
+                    await _statisticsService.UpdateSummaryStatisticsAsync(instance.ClientId, instance.InstanceId);
                 }
                 else
                 {
@@ -205,30 +207,6 @@ namespace Lykke.AlgoStore.Job.Stopping
             await _log.WriteInfoAsync(nameof(ExpiredInstancesMonitor), _loggingContext,
                 $"Successfully stopped instance pod for instance id {instance.InstanceId} of client id {instance.ClientId}");
             return true;
-        }
-
-        public async Task UpdateSummaryStatisticsAsync(string clientId, string instanceId)
-        {
-            try
-            {
-                var instanceData =
-                    await _algoClientInstanceRepository.GetAlgoInstanceDataByClientIdAsync(clientId, instanceId);
-                var authHandler = new AlgoAuthorizationHeaderHttpClientHandler(instanceData.AuthToken);
-                var instanceEventHandler = HttpClientGenerator.HttpClientGenerator
-                    .BuildForUrl(_statisticsServiceUrl)
-                    .WithAdditionalDelegatingHandler(authHandler);
-
-                var statisticsClient = instanceEventHandler.Create().Generate<IStatisticsClient>();
-
-                await statisticsClient.UpdateSummaryAsync(clientId, instanceId);
-            }
-            catch (Exception ex)
-            {
-                await _log.WriteWarningAsync(nameof(UpdateSummaryStatisticsAsync),
-                    _loggingContext,
-                    $"Failed to update summary statistics for instance {instanceId} of client {clientId}", 
-                    ex);
-            }
         }
     }
 }

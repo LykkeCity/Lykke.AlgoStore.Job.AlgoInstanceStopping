@@ -1,6 +1,7 @@
 ﻿using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.Job.Stopping.Controllers;
+using Lykke.AlgoStore.Job.Stopping.Core.Services;
 using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.KubernetesClient.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +25,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Tests
             kubernetesClientMock.Setup(k => k.ListPodsByInstanceIdAsync(It.IsAny<string>()))
                                 .Returns(Task.FromResult<IList<Iok8skubernetespkgapiv1Pod>>(null));
 
-            KubernetesController controller = new KubernetesController(kubernetesClientMock.Object, GetAlgoInstanceRepoMock());
+            KubernetesController controller = new KubernetesController(kubernetesClientMock.Object, GetAlgoInstanceRepoMock(), GetStatisticsServiceMock());
 
             var result = await controller.GetPods(testInstanceId);
             Assert.IsInstanceOf<NotFoundResult>(result);
@@ -35,7 +36,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Tests
         {
             var kubernetesClientMock = new Mock<IKubernetesApiClient>();
 
-            KubernetesController controller = new KubernetesController(kubernetesClientMock.Object, GetAlgoInstanceRepoMock());
+            KubernetesController controller = new KubernetesController(kubernetesClientMock.Object, GetAlgoInstanceRepoMock(), GetStatisticsServiceMock());
 
             var result = await controller.GetPods("");
             Assert.IsInstanceOf<BadRequestObjectResult>(result);
@@ -46,7 +47,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Tests
         {
             var kubernetesClientMock = new Mock<IKubernetesApiClient>();
 
-            KubernetesController controller = new KubernetesController(kubernetesClientMock.Object, GetAlgoInstanceRepoMock());
+            KubernetesController controller = new KubernetesController(kubernetesClientMock.Object, GetAlgoInstanceRepoMock(), GetStatisticsServiceMock());
 
             var result = await controller.DeleteAlgoInstances("");
             Assert.IsInstanceOf<BadRequestObjectResult>(result);
@@ -60,7 +61,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Tests
             kubernetesClientMock.Setup(k => k.ListPodsByInstanceIdAsync(It.IsAny<string>()))
                                 .Returns(Task.FromResult<IList<Iok8skubernetespkgapiv1Pod>>(new List<Iok8skubernetespkgapiv1Pod>()));
 
-            KubernetesController controller = new KubernetesController(kubernetesClientMock.Object, GetAlgoInstanceRepoMock());
+            KubernetesController controller = new KubernetesController(kubernetesClientMock.Object, GetAlgoInstanceRepoMock(), GetStatisticsServiceMock());
 
             var result = await controller.DeleteAlgoInstances(testInstanceId);
             Assert.IsInstanceOf<BadRequestObjectResult>(result);
@@ -77,7 +78,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Tests
             kubernetesClientMock.Setup(k => k.DeleteAsync(It.IsAny<string>(), It.IsAny<string>()))
                               .Returns(Task.FromResult(false));
 
-            KubernetesController controller = new KubernetesController(kubernetesClientMock.Object, GetAlgoInstanceRepoMock());
+            KubernetesController controller = new KubernetesController(kubernetesClientMock.Object, GetAlgoInstanceRepoMock(), GetStatisticsServiceMock());
 
             var result = await controller.DeleteAlgoInstances(testInstanceId);
             Assert.IsInstanceOf<BadRequestObjectResult>(result);
@@ -94,7 +95,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Tests
             kubernetesClientMock.Setup(k => k.DeleteAsync(It.IsAny<string>(), It.IsAny<string>()))
                               .Returns(Task.FromResult(true));
 
-            KubernetesController controller = new KubernetesController(kubernetesClientMock.Object, GetAlgoInstanceRepoMock());
+            KubernetesController controller = new KubernetesController(kubernetesClientMock.Object, GetAlgoInstanceRepoMock(), GetStatisticsServiceMock());
 
             var result = await controller.DeleteAlgoInstances(testInstanceId);
             Assert.IsInstanceOf<OkResult>(result);
@@ -108,7 +109,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Tests
             kubernetesClientMock.Setup(k => k.DeleteAsync(It.IsAny<string>(), It.IsAny<string>()))
                               .Returns(Task.FromResult(true));
 
-            KubernetesController controller = new KubernetesController(kubernetesClientMock.Object, GetAlgoInstanceRepoMock());
+            KubernetesController controller = new KubernetesController(kubernetesClientMock.Object, GetAlgoInstanceRepoMock(), GetStatisticsServiceMock());
 
             var result = await controller.DeleteAlgoInstacneByInstanceIdAndPod(testInstanceId, testPodNamespace);
             Assert.IsInstanceOf<OkResult>(result);
@@ -119,7 +120,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Tests
         {
             var kubernetesClientMock = new Mock<IKubernetesApiClient>();
 
-            KubernetesController controller = new KubernetesController(kubernetesClientMock.Object, GetAlgoInstanceRepoMock());
+            KubernetesController controller = new KubernetesController(kubernetesClientMock.Object, GetAlgoInstanceRepoMock(), GetStatisticsServiceMock());
 
             var result = await controller.DeleteAlgoInstacneByInstanceIdAndPod("", "");
             Assert.IsInstanceOf<BadRequestObjectResult>(result);
@@ -138,7 +139,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Tests
                     return Task.FromResult(true);
                 });
 
-            KubernetesController controller = new KubernetesController(kubernetesClientMock.Object, GetAlgoInstanceRepoMock());
+            KubernetesController controller = new KubernetesController(kubernetesClientMock.Object, GetAlgoInstanceRepoMock(), GetStatisticsServiceMock());
 
             var result = await controller.DeleteAlgoInstacneByInstanceIdAndPod(testInstanceId, testPodNamespace);
             Assert.IsInstanceOf<OkResult>(result);
@@ -156,7 +157,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Tests
                                 return Task.FromResult(GetTestPods());
                             });
 
-            KubernetesController controller = new KubernetesController(kubernetesClientMock.Object, GetAlgoInstanceRepoMock());
+            KubernetesController controller = new KubernetesController(kubernetesClientMock.Object, GetAlgoInstanceRepoMock(), GetStatisticsServiceMock());
 
             var result = await controller.GetPods(testInstanceId);
             Assert.IsInstanceOf<OkObjectResult>(result);
@@ -188,6 +189,16 @@ namespace Lykke.AlgoStore.Job.Stopping.Tests
                 .Returns(Task.CompletedTask);
 
             return algoClientInstanceRepositoryMock.Object;
+        }
+
+        private IStatisticsService GetStatisticsServiceMock()
+        {
+            var statisticsServiceMock = new Mock<IStatisticsService>();
+
+            statisticsServiceMock.Setup(m => m.UpdateSummaryStatisticsAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+
+            return statisticsServiceMock.Object;
         }
 
         private void CheckIfPodIsChanged(string podNamespace)

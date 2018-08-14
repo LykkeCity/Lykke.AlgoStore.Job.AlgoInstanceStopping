@@ -1,6 +1,7 @@
 ﻿using Common.Log;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
+using Lykke.AlgoStore.Job.Stopping.Core.Services;
 using Lykke.AlgoStore.Job.Stopping.Settings.JobSettings;
 using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.KubernetesClient.Models;
@@ -28,7 +29,9 @@ namespace Lykke.AlgoStore.Job.Stopping.Tests
         {
             defaultRepoMock = GetAlgoClientInstanceRepositoryMock();
             defaultKuberClient = GetKubernetesApiClientMock();
-            defaultMonitorMock = new ExpiredInstancesMonitor(defaultRepoMock, defaultKuberClient, null, "http://fake.host", GetMockSettings(), GetMockLog());
+            var statisticsServiceMock = GetStatisticsServiceMock();
+
+            defaultMonitorMock = new ExpiredInstancesMonitor(defaultRepoMock, defaultKuberClient, null, GetMockSettings(), statisticsServiceMock, GetMockLog());
         }
 
         [Test]
@@ -163,6 +166,16 @@ namespace Lykke.AlgoStore.Job.Stopping.Tests
             {
                 new Iok8skubernetespkgapiv1Pod { Metadata = new Iok8sapimachinerypkgapismetav1ObjectMeta { NamespaceProperty = PodNamespace, Name = InstanceId1 } }
             };
+        }
+
+        private IStatisticsService GetStatisticsServiceMock()
+        {
+            var statisticsServiceMock = new Mock<IStatisticsService>();
+
+            statisticsServiceMock.Setup(m => m.UpdateSummaryStatisticsAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+
+            return statisticsServiceMock.Object;
         }
     }
 }
