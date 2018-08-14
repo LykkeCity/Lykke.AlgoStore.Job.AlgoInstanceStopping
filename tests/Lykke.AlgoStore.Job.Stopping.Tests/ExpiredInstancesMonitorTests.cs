@@ -32,6 +32,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Tests
             var statisticsServiceMock = GetStatisticsServiceMock();
 
             defaultMonitorMock = new ExpiredInstancesMonitor(defaultRepoMock, defaultKuberClient, GetMockSettings(), statisticsServiceMock, GetMockLog());
+            defaultMonitorMock = new ExpiredInstancesMonitor(defaultRepoMock, defaultKuberClient, null, "http://fake.host", GetMockSettings(), GetMockLog());
         }
 
         [Test]
