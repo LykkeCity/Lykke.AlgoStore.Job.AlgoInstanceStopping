@@ -9,6 +9,7 @@ using Lykke.AlgoStore.Job.Stopping.Services.Services;
 using Lykke.AlgoStore.Job.Stopping.Settings;
 using Lykke.AlgoStore.Job.Stopping.Settings.JobSettings;
 using Lykke.AlgoStore.KubernetesClient;
+using Lykke.AlgoStore.Service.Statistics.Client;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Rest;
@@ -41,6 +42,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Modules
             RegisterExternalServices(builder);
             RegisterRepositories(builder);
             RegisterStoppingProcess(builder);
+            RegisterLocalServices(builder);
 
             builder.Populate(_services);
         }
@@ -54,9 +56,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Modules
                    .WithParameter("certificateHash", _settings.AlgoStoreStoppingJob.Kubernetes.CertificateHash)
                    .SingleInstance();
 
-            builder.RegisterType<StatisticsService>()
-                .As<IStatisticsService>()
-                .WithParameter("statisticsServiceUrl", _settings.AlgoStoreStatisticsClient.ServiceUrl);
+            builder.RegisterStatisticsClient(_settings.AlgoStoreStatisticsClient.ServiceUrl);
         }
 
         private void RegisterRepositories(ContainerBuilder builder)
@@ -74,6 +74,13 @@ namespace Lykke.AlgoStore.Job.Stopping.Modules
         {
             builder.RegisterInstance(_settingsManager.CurrentValue.ExpiredInstancesMonitor);
             builder.RegisterType<ExpiredInstancesMonitor>()               
+                .SingleInstance();
+        }
+
+        private void RegisterLocalServices(ContainerBuilder builder)
+        {
+            builder.RegisterType<StatisticsService>()
+                .As<IStatisticsService>()
                 .SingleInstance();
         }
     }

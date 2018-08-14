@@ -1,7 +1,6 @@
 ﻿using Common.Log;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.Job.Stopping.Core.Services;
-using Lykke.AlgoStore.Job.Stopping.Services.Infrastructure.Extensions;
 using Lykke.AlgoStore.Service.Statistics.Client;
 using System;
 using System.Threading.Tasks;
@@ -13,25 +12,23 @@ namespace Lykke.AlgoStore.Job.Stopping.Services.Services
         private const string _loggingContext = "Update Summary Statistics";
 
         private readonly IAlgoClientInstanceRepository _algoClientInstanceRepository;
-        private readonly string _statisticsServiceUrl;
+        private readonly IStatisticsClient _statisticsClient;
         private readonly ILog _log;        
 
-        public StatisticsService(IAlgoClientInstanceRepository algoClientInstanceRepository, string statisticsServiceUrl, ILog log)
+        public StatisticsService(IAlgoClientInstanceRepository algoClientInstanceRepository, IStatisticsClient statisticsClient, ILog log)
         {
             _algoClientInstanceRepository = algoClientInstanceRepository;
+            _statisticsClient = statisticsClient;
             _log = log;
-            _statisticsServiceUrl = statisticsServiceUrl;
         }
 
         public async Task UpdateSummaryStatisticsAsync(string clientId, string instanceId)
         {
             try
             {
-                var instanceData =
-                    await _algoClientInstanceRepository.GetAlgoInstanceDataByClientIdAsync(clientId, instanceId);
-                var statisticsClient = HttpClientGeneratorHelper.GenerateClient<IStatisticsClient>(instanceData.AuthToken, _statisticsServiceUrl);
+                var instanceData = await _algoClientInstanceRepository.GetAlgoInstanceDataByClientIdAsync(clientId, instanceId);                       
 
-                await statisticsClient.UpdateSummaryAsync(clientId, instanceId);
+                await _statisticsClient.UpdateSummaryAsync(clientId, instanceId, instanceData.AuthToken.ToBearerToken());
             }
             catch (Exception ex)
             {
