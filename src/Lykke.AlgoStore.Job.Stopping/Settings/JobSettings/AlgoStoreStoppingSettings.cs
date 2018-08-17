@@ -8,5 +8,6 @@ namespace Lykke.AlgoStore.Job.Stopping.Settings.JobSettings
         public KubernetesSettings Kubernetes { get; set; }
         public InstanceAuthSettings StoppingServiceCache { get; set; }
         public ExpiredInstancesMonitorSettings ExpiredInstancesMonitor { get; set; }
+        public int StatisticsSummaryUpdateDelayInMilisec { get; set; }
     }
 }
