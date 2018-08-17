@@ -84,6 +84,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Modules
         {
             builder.RegisterType<StatisticsService>()
                 .As<IStatisticsService>()
+                .WithParameter("statisticsSummaryUpdateDelayInMilisec", _settings.AlgoStoreStoppingJob.StatisticsSummaryUpdateDelayInMilisec)
                 .SingleInstance();
         }
     }

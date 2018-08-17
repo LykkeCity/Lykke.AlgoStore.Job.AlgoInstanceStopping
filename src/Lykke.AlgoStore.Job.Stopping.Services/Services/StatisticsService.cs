@@ -13,20 +13,24 @@ namespace Lykke.AlgoStore.Job.Stopping.Services.Services
 
         private readonly IAlgoClientInstanceRepository _algoClientInstanceRepository;
         private readonly IStatisticsClient _statisticsClient;
-        private readonly ILog _log;        
+        private readonly ILog _log;
+        private readonly int _statisticsSummaryUpdateDelayInMilisec;
 
-        public StatisticsService(IAlgoClientInstanceRepository algoClientInstanceRepository, IStatisticsClient statisticsClient, ILog log)
+        public StatisticsService(IAlgoClientInstanceRepository algoClientInstanceRepository, IStatisticsClient statisticsClient, int statisticsSummaryUpdateDelayInMilisec, ILog log)
         {
             _algoClientInstanceRepository = algoClientInstanceRepository;
             _statisticsClient = statisticsClient;
-            _log = log;
+            _statisticsSummaryUpdateDelayInMilisec = statisticsSummaryUpdateDelayInMilisec;
+            _log = log;         
         }
 
         public async Task UpdateSummaryStatisticsAsync(string clientId, string instanceId)
         {
             try
             {
-                var instanceData = await _algoClientInstanceRepository.GetAlgoInstanceDataByClientIdAsync(clientId, instanceId);                       
+                var instanceData = await _algoClientInstanceRepository.GetAlgoInstanceDataByClientIdAsync(clientId, instanceId);
+
+                await Task.Delay(_statisticsSummaryUpdateDelayInMilisec);
 
                 await _statisticsClient.UpdateSummaryAsync(clientId, instanceId, instanceData.AuthToken.ToBearerToken());
             }
