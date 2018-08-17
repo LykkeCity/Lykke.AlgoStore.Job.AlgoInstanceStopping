@@ -88,7 +88,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Controllers
             if (instanceData != null)
             {
                 await ChangeAlgoInstanceStatusToStopped(instanceData);
-                await _statisticsService.UpdateSummaryStatisticsAsync(instanceData.ClientId, instanceData.InstanceId);
+                _statisticsService.UpdateSummaryStatisticsAsync(instanceData.ClientId, instanceData.InstanceId);
             }
 
             return Ok();
@@ -121,7 +121,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Controllers
             if (instanceData != null)
             {
                 await ChangeAlgoInstanceStatusToStopped(instanceData);
-                await _statisticsService.UpdateSummaryStatisticsAsync(instanceData.ClientId, instanceData.InstanceId);
+                _statisticsService.UpdateSummaryStatisticsAsync(instanceData.ClientId, instanceData.InstanceId);
             }
 
             return Ok();
