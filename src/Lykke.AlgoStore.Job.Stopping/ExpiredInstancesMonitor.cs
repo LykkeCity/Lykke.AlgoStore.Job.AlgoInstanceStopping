@@ -95,7 +95,7 @@ namespace Lykke.AlgoStore.Job.Stopping
                     continue;
                 }
 
-                algoInstance.AlgoInstanceStatus = AlgoInstanceStatus.Errored;
+                algoInstance.AlgoInstanceStatus = terminatedReason == "Completed" ? AlgoInstanceStatus.Stopped : AlgoInstanceStatus.Errored;
                 algoInstance.AlgoInstanceStopDate = DateTime.UtcNow;
 
                 await _algoClientInstanceRepository.SaveAlgoInstanceDataAsync(algoInstance);
