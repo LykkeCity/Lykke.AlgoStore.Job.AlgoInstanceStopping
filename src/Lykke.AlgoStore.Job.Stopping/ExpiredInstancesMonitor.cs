@@ -10,31 +10,38 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Lykke.AlgoStore.Service.Statistics.Client;
-using Lykke.Common.Log;
+using Newtonsoft.Json.Linq;
+using Lykke.AlgoStore.Service.Logging.Client;
+using Lykke.Service.Logging.Client.AutorestClient.Models;
+using Lykke.AlgoStore.Job.Stopping.Core.Services;
 
 namespace Lykke.AlgoStore.Job.Stopping
 {
     public class ExpiredInstancesMonitor
     {
-        private readonly string _statisticsServiceUrl;
+        private const string _loggingContext = "Check for expired instances";
+
         private readonly IAlgoClientInstanceRepository _algoClientInstanceRepository;
         private readonly IKubernetesApiClient _kubernetesApiClient;
+        private readonly ILoggingClient _loggingClient;
         private readonly ExpiredInstancesMonitorSettings _settings;
-        private const string _loggingContext = "Check for expired instances";
+        private readonly IStatisticsService _statisticsService;
         private readonly ILog _log;
 
         public ExpiredInstancesMonitor(
             IAlgoClientInstanceRepository algoClientInstanceRepository,
             IKubernetesApiClient kubernetesApiClient,
-            string statisticsServiceUrl,
+            ILoggingClient loggingClient,
             ExpiredInstancesMonitorSettings settings,
+            IStatisticsService statisticsService,
             ILog log)
         {
             _algoClientInstanceRepository = algoClientInstanceRepository;
             _kubernetesApiClient = kubernetesApiClient;
+            _loggingClient = loggingClient;
             _settings = settings;
+            _statisticsService = statisticsService;
             _log = log;
-            _statisticsServiceUrl = statisticsServiceUrl;
         }
 
         public async Task StartAsync()
@@ -50,7 +57,59 @@ namespace Lykke.AlgoStore.Job.Stopping
 
                 await TryStopExpiredInstances(expiredInstances);
 
+                var erroredPods = await GetErroredPodsAsync();
+
+                await TryStopErroredPods(erroredPods);
+
                 await Task.Delay(TimeSpan.FromSeconds(_settings.CheckIntervalInSeconds));
+            }
+        }
+
+        public async Task TryStopErroredPods(List<Iok8skubernetespkgapiv1Pod> erroredPods)
+        {
+            foreach (var pod in erroredPods)
+            {
+                var algoInstanceParams = JObject.Parse(pod.Spec.Containers[0].Env.FirstOrDefault(e => e.Name == "ALGO_INSTANCE_PARAMS").Value);
+
+                var instanceId = pod.Metadata.Labels["app"];
+                var algoId = algoInstanceParams["AlgoId"].Value<string>();
+                var algoInstance = await _algoClientInstanceRepository.GetAlgoInstanceDataByAlgoIdAsync(algoId, instanceId);
+                var terminatedReason = pod.Status.ContainerStatuses[0].State.Terminated.Reason;
+
+                var deleted = await DeleteInstancePodAsync(
+                        new AlgoInstanceStoppingData { ClientId = algoInstance.ClientId, InstanceId = instanceId },
+                        pod);
+
+                if (string.IsNullOrEmpty(algoInstance.InstanceId))
+                {
+                    await _log.WriteWarningAsync(nameof(ExpiredInstancesMonitor), _loggingContext,
+                        $"Found errored pod for deleted instance {instanceId}, algo {algoId}");
+                    continue;
+                }
+
+                if (!deleted)
+                {
+                    await _log.WriteWarningAsync(nameof(ExpiredInstancesMonitor), _loggingContext,
+                        $"Unable to stop kubernetes pod for Instance {algoInstance.InstanceId} of client id {algoInstance.ClientId}.");
+
+                    continue;
+                }
+
+                algoInstance.AlgoInstanceStatus = terminatedReason == "Completed" ? AlgoInstanceStatus.Stopped : AlgoInstanceStatus.Errored;
+                algoInstance.AlgoInstanceStopDate = DateTime.UtcNow;
+
+                await _algoClientInstanceRepository.SaveAlgoInstanceDataAsync(algoInstance);
+                await _statisticsService.UpdateSummaryStatisticsAsync(algoInstance.ClientId, algoInstance.InstanceId);
+
+                if (terminatedReason == "OOMKilled")
+                {
+                    await _loggingClient.WriteAsync(new UserLogRequest
+                    {
+                        Date = DateTime.UtcNow,
+                        InstanceId = instanceId,
+                        Message = "Your instance was stopped because it ran out of resources"
+                    }, algoInstance.AuthToken);
+                }
             }
         }
 
@@ -67,7 +126,7 @@ namespace Lykke.AlgoStore.Job.Stopping
                     var markAsStoppedSucceded = await MarkInstanceAsStoppedInDbAsync(instance);
 
                     if (markAsStoppedSucceded)
-                        await UpdateSummaryStatisticsAsync(instance.ClientId, instance.InstanceId);
+                        await _statisticsService.UpdateSummaryStatisticsAsync(instance.ClientId, instance.InstanceId);
 
                     continue;
                 }
@@ -76,7 +135,7 @@ namespace Lykke.AlgoStore.Job.Stopping
                 if (deleted)
                 {
                     await MarkInstanceAsStoppedInDbAsync(instance);
-                    await UpdateSummaryStatisticsAsync(instance.ClientId, instance.InstanceId);
+                    await _statisticsService.UpdateSummaryStatisticsAsync(instance.ClientId, instance.InstanceId);
                 }
                 else
                 {
@@ -90,6 +149,14 @@ namespace Lykke.AlgoStore.Job.Stopping
         {
             var instances = await _algoClientInstanceRepository.GetAllAlgoInstancesPastEndDate(DateTime.UtcNow);
             return instances.Where(i => i.AlgoInstanceStatus == AlgoInstanceStatus.Started).ToList();
+        }
+
+        public async Task<List<Iok8skubernetespkgapiv1Pod>> GetErroredPodsAsync()
+        {
+            var pods = await _kubernetesApiClient.ListPodsByInstanceIdAsync(null);
+
+            return pods.Where(p => p.Status.ContainerStatuses.Count == 1 
+                                && p.Status.ContainerStatuses[0].State.Terminated != null).ToList();
         }
 
         public async Task<Iok8skubernetespkgapiv1Pod> GetInstancePodAsync(string instanceId)
@@ -140,30 +207,6 @@ namespace Lykke.AlgoStore.Job.Stopping
             await _log.WriteInfoAsync(nameof(ExpiredInstancesMonitor), _loggingContext,
                 $"Successfully stopped instance pod for instance id {instance.InstanceId} of client id {instance.ClientId}");
             return true;
-        }
-
-        public async Task UpdateSummaryStatisticsAsync(string clientId, string instanceId)
-        {
-            try
-            {
-                var instanceData =
-                    await _algoClientInstanceRepository.GetAlgoInstanceDataByClientIdAsync(clientId, instanceId);
-                var authHandler = new AlgoAuthorizationHeaderHttpClientHandler(instanceData.AuthToken);
-                var instanceEventHandler = HttpClientGenerator.HttpClientGenerator
-                    .BuildForUrl(_statisticsServiceUrl)
-                    .WithAdditionalDelegatingHandler(authHandler);
-
-                var statisticsClient = instanceEventHandler.Create().Generate<IStatisticsClient>();
-
-                await statisticsClient.UpdateSummaryAsync(clientId, instanceId);
-            }
-            catch (Exception ex)
-            {
-                await _log.WriteWarningAsync(nameof(UpdateSummaryStatisticsAsync),
-                    _loggingContext,
-                    $"Failed to update summary statistics for instance {instanceId} of client {clientId}", 
-                    ex);
-            }
         }
     }
 }

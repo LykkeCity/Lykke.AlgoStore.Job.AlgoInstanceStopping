@@ -13,6 +13,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.Job.Stopping.Core.Services;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 
 namespace Lykke.AlgoStore.Job.Stopping.Controllers
 {
@@ -23,11 +25,15 @@ namespace Lykke.AlgoStore.Job.Stopping.Controllers
     {
         private IKubernetesApiClient _kubernetesApiClient;
         private IAlgoClientInstanceRepository _algoInstanceRepository;
+        private IStatisticsService _statisticsService;
 
-        public KubernetesController(IKubernetesApiClient kubernetesApiClient, IAlgoClientInstanceRepository algoInstanceRepository)
+        public KubernetesController(IKubernetesApiClient kubernetesApiClient,
+            IAlgoClientInstanceRepository algoInstanceRepository,
+            IStatisticsService statisticsService)         
         {
             _kubernetesApiClient = kubernetesApiClient;
             _algoInstanceRepository = algoInstanceRepository;
+            _statisticsService = statisticsService;
         }
 
         /// <summary>
@@ -78,7 +84,12 @@ namespace Lykke.AlgoStore.Job.Stopping.Controllers
             if (!result)
                 return BadRequest(ErrorResponse.Create(Phrases.UnsuccessfulDeletion));
 
-            await ChangeAlgoInstanceStatusToStopped();
+            var instanceData = await _algoInstanceRepository.GetAlgoInstanceDataByAuthTokenAsync(User.GetAuthToken());
+            if (instanceData != null)
+            {
+                await ChangeAlgoInstanceStatusToStopped(instanceData);
+                _statisticsService.UpdateSummaryStatisticsAsync(instanceData.ClientId, instanceData.InstanceId);
+            }
 
             return Ok();
         }
@@ -106,20 +117,21 @@ namespace Lykke.AlgoStore.Job.Stopping.Controllers
             if (!result)
                 return BadRequest(ErrorResponse.Create(Phrases.UnsuccessfulDeletion));
 
-            await ChangeAlgoInstanceStatusToStopped();
+            var instanceData = await _algoInstanceRepository.GetAlgoInstanceDataByAuthTokenAsync(User.GetAuthToken());
+            if (instanceData != null)
+            {
+                await ChangeAlgoInstanceStatusToStopped(instanceData);
+                _statisticsService.UpdateSummaryStatisticsAsync(instanceData.ClientId, instanceData.InstanceId);
+            }
 
             return Ok();
         }
 
-        private async Task ChangeAlgoInstanceStatusToStopped()
-        {
-            var instanceData = await _algoInstanceRepository.GetAlgoInstanceDataByAuthTokenAsync(User.GetAuthToken());
-            if (instanceData != null)
-            {
-                instanceData.AlgoInstanceStatus = AlgoInstanceStatus.Stopped;
-                instanceData.AlgoInstanceStopDate = DateTime.UtcNow;
-                await _algoInstanceRepository.SaveAlgoInstanceDataAsync(instanceData);
-            }
+        private async Task ChangeAlgoInstanceStatusToStopped(AlgoClientInstanceData instanceData)
+        {           
+            instanceData.AlgoInstanceStatus = AlgoInstanceStatus.Stopped;
+            instanceData.AlgoInstanceStopDate = DateTime.UtcNow;
+            await _algoInstanceRepository.SaveAlgoInstanceDataAsync(instanceData);
         }
     }
 }

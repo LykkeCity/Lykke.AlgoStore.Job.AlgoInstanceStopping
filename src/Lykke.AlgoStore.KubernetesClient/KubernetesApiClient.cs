@@ -48,7 +48,9 @@ namespace Lykke.AlgoStore.KubernetesClient
         public async Task<IList<Iok8skubernetespkgapiv1Pod>> ListPodsByInstanceIdAsync(string instanceId)
         {
             using (var kubeResponse =
-                await ListCoreV1PodForAllNamespacesWithHttpMessagesAsync(null, true, "app=" + instanceId))
+                await ListCoreV1PodForAllNamespacesWithHttpMessagesAsync(
+                    fieldSelector: "metadata.namespace=algo-test",
+                    labelSelector: (string.IsNullOrEmpty(instanceId) ? null : $"app={instanceId}")))
             {
                 if (!kubeResponse.Response.IsSuccessStatusCode || kubeResponse.Body == null ||
                     kubeResponse.Body.Items == null)
