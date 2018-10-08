@@ -5,6 +5,7 @@ using Lykke.AlgoStore.Job.Stopping.Client.Models.ResponseModels;
 using Microsoft.Rest;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.Job.Stopping.Client
@@ -119,6 +120,11 @@ namespace Lykke.AlgoStore.Job.Stopping.Client
                         ErrorMessage = "Unauthorized"
                     }
                 };
+            }
+
+            if (serviceResponse.Response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return new PodsResponse { Error = new ErrorModel{ ErrorMessage = HttpStatusCode.NotFound.ToString()}};
             }
 
             throw new ArgumentException("Unknown response object");

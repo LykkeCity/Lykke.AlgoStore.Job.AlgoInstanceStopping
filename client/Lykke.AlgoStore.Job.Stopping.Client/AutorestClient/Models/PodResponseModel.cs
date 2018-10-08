@@ -6,6 +6,7 @@
 
 namespace Lykke.AlgoStore.Job.Stopping.Client.AutorestClient.Models
 {
+    using Microsoft.Rest;
     using Newtonsoft.Json;
     using System.Linq;
 
@@ -22,7 +23,7 @@ namespace Lykke.AlgoStore.Job.Stopping.Client.AutorestClient.Models
         /// <summary>
         /// Initializes a new instance of the PodResponseModel class.
         /// </summary>
-        public PodResponseModel(string name = default(string), string namespaceProperty = default(string), string phase = default(string))
+        public PodResponseModel(string name, string namespaceProperty, string phase)
         {
             Name = name;
             NamespaceProperty = namespaceProperty;
@@ -50,5 +51,26 @@ namespace Lykke.AlgoStore.Job.Stopping.Client.AutorestClient.Models
         [JsonProperty(PropertyName = "Phase")]
         public string Phase { get; set; }
 
+        /// <summary>
+        /// Validate the object.
+        /// </summary>
+        /// <exception cref="ValidationException">
+        /// Thrown if validation fails
+        /// </exception>
+        public virtual void Validate()
+        {
+            if (Name == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "Name");
+            }
+            if (NamespaceProperty == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "NamespaceProperty");
+            }
+            if (Phase == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "Phase");
+            }
+        }
     }
 }
